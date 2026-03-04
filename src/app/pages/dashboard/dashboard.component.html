@@ -1,0 +1,118 @@
+<h2 class="title">Dashboard</h2>
+
+<div class="filter-bar">
+  <div class="segment">
+    <button
+      [class.active]="selectedFilter === '7days'"
+      (click)="changeFilter('7days')"
+    >
+      7 Days
+    </button>
+
+    <button
+      [class.active]="selectedFilter === 'month'"
+      (click)="changeFilter('month')"
+    >
+      This Month
+    </button>
+
+    <button
+      [class.active]="selectedFilter === 'custom'"
+      (click)="selectedFilter = 'custom'"
+    >
+      Custom
+    </button>
+  </div>
+
+  <div *ngIf="selectedFilter === 'custom'" class="custom-date-modern">
+    <!-- Start Date — opens below, aligned left -->
+    <div class="date-wrapper">
+      <button class="date-capsule" (click)="picker1.open()">
+        {{ startDate ? (startDate | date: "dd MMM yyyy") : "Start Date" }}
+        <mat-icon>calendar_today</mat-icon>
+      </button>
+      <input
+        matInput
+        [matDatepicker]="picker1"
+        [(ngModel)]="startDate"
+        class="hidden-date-input"
+      />
+      <mat-datepicker
+        #picker1
+        yPosition="below"
+        xPosition="start"
+      ></mat-datepicker>
+    </div>
+
+    <!-- End Date — opens below, aligned RIGHT (end) so it doesn't overflow -->
+    <div class="date-wrapper">
+      <button class="date-capsule" (click)="picker2.open()">
+        {{ endDate ? (endDate | date: "dd MMM yyyy") : "End Date" }}
+        <mat-icon>calendar_today</mat-icon>
+      </button>
+      <input
+        matInput
+        [matDatepicker]="picker2"
+        [(ngModel)]="endDate"
+        class="hidden-date-input"
+      />
+      <mat-datepicker
+        #picker2
+        yPosition="below"
+        xPosition="end"
+      ></mat-datepicker>
+    </div>
+
+    <button class="apply-btn-modern" (click)="loadCustom()">
+      Apply Filter
+    </button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card highlight">
+    <h4>Total Revenue</h4>
+    <p>₹{{ stats.totalRevenue }}</p>
+    <span class="sub"> {{ stats.totalCustomers }} Customers </span>
+  </div>
+
+  <div class="card highlight">
+    <h4>Total Orders</h4>
+    <p>{{ stats.totalOrders }}</p>
+  </div>
+
+  <div class="card highlight">
+    <h4>Avg Order Value</h4>
+    <p>₹{{ stats.avgOrderValue | number: "1.0-2" }}</p>
+  </div>
+
+  <div class="card highlight">
+    <h4>Inventory Value</h4>
+    <p>₹{{ stats.inventoryValue | number: "1.0-2" }}</p>
+  </div>
+</div>
+
+<div class="chart-card">
+  <h3>Daily Sales</h3>
+  <div id="salesChart"></div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>
+      Stock Distribution
+      <span class="badge">{{ stats.outOfStock }} Out Of Stock</span>
+    </h3>
+    <div id="stockChart"></div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Top Selling Products</h3>
+    <div id="topProductsChart"></div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Payment Mode</h3>
+    <div id="paymentChart"></div>
+  </div>
+</div>

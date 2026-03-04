@@ -1,1 +1,483 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===============================
+   ROOT THEME VARIABLES
+================================= */
+:root {
+  --primary-color: #ff6b00;
+  --primary-dark: #e65c00;
+  --background-light: #f8fafc;
+  --sidebar-bg: #1e293b;
+  --text-dark: #1f2937;
+}
+
+/* ===============================
+   GLOBAL RESET
+================================= */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: "Plus Jakarta Sans", Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-dark);
+}
+
+/* ===============================
+   DIALOG FIXES
+================================= */
+.mat-mdc-dialog-container {
+  border-radius: 24px !important;
+  overflow: visible !important;
+}
+
+.mat-mdc-dialog-surface {
+  background: #ffffff !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.mat-mdc-dialog-content {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* ===============================
+   REMOVE MDC EXTRA FOCUS EFFECTS
+================================= */
+.mdc-line-ripple {
+  display: none !important;
+}
+
+.mat-mdc-form-field-focus-overlay {
+  display: none !important;
+}
+
+/* ===============================
+   FORM FIELD TEXT VISIBILITY
+================================= */
+.mat-mdc-input-element {
+  color: #222 !important;
+  font-weight: 500;
+}
+
+.mat-mdc-input-element::placeholder {
+  color: #888 !important;
+  opacity: 1;
+}
+
+.mat-mdc-floating-label {
+  color: #555 !important;
+  font-weight: 500;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: var(--primary-color) !important;
+}
+
+/* ===============================
+   OUTLINE BORDER STYLING
+================================= */
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-color: #ccc !important;
+  border-width: 1px !important;
+}
+
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: var(--primary-color) !important;
+  border-width: 2px !important;
+}
+
+.mat-mdc-text-field-wrapper {
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading {
+  border-left-width: 2px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DATEPICKER PANEL — opens below button, premium look
+═══════════════════════════════════════════════════════ */
+
+/* Overlay panel position — flush below the trigger */
+.mat-datepicker-content {
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #f0f0f0 !important;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.16),
+    0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+  margin-top: 8px !important; /* gap below the button */
+}
+
+/* Remove any backdrop blur that washes out text */
+.mat-datepicker-content,
+.mat-datepicker-content * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* ── Calendar wrapper ── */
+.mat-calendar {
+  background: #ffffff !important;
+  padding: 8px !important;
+  width: 300px !important;
+}
+
+/* ── Header ── */
+.mat-calendar-header {
+  background: linear-gradient(135deg, #ff6b00, #ff8c42) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 10px 16px !important;
+}
+
+/* Month/Year button text */
+.mat-calendar-period-button,
+.mat-calendar-period-button .mdc-button__label {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+}
+
+/* Navigation arrows */
+.mat-calendar-previous-button,
+.mat-calendar-next-button {
+  color: #ffffff !important;
+}
+
+.mat-calendar-previous-button svg,
+.mat-calendar-next-button svg,
+.mat-calendar-previous-button mat-icon,
+.mat-calendar-next-button mat-icon {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* ── Day-of-week headers (S M T W T F S) ── */
+.mat-calendar-table-header th,
+.mat-calendar-body-label,
+.mat-calendar-table-header-divider {
+  color: #888 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* ── Date cells — FORCE dark black text ── */
+.mat-calendar-body-cell-content {
+  color: #111111 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  transition: all 0.15s ease !important;
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+}
+
+/* All date numbers black by default */
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled)
+  .mat-calendar-body-cell-content {
+  color: #111111 !important;
+}
+
+/* Disabled dates */
+.mat-calendar-body-disabled .mat-calendar-body-cell-content {
+  color: #cccccc !important;
+}
+
+/* ── Hover ── */
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover
+  .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background: #fff3e6 !important;
+  color: #ff6b00 !important;
+  transform: scale(1.08) !important;
+}
+
+/* ── Selected date ── */
+.mat-calendar-body-selected {
+  background: linear-gradient(135deg, #ff6b00, #ff8c42) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.45) !important;
+  font-weight: 800 !important;
+}
+
+/* ── Today circle ── */
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border: 2px solid #ff6b00 !important;
+  background: transparent !important;
+  color: #ff6b00 !important;
+  font-weight: 700 !important;
+}
+
+/* ── In-range highlight (for date range pickers) ── */
+.mat-calendar-body-in-range::before {
+  background: rgba(255, 107, 0, 0.1) !important;
+}
+
+/* ── Year/Month view cells ── */
+.mat-calendar-body-cell-content.mat-focus-indicator {
+  color: #111111 !important;
+}
+
+/* Year picker cells */
+.mat-calendar-period-button
+  + .mat-calendar-content
+  .mat-calendar-body-cell-content,
+.mat-multi-year-view .mat-calendar-body-cell-content,
+.mat-year-view .mat-calendar-body-cell-content {
+  color: #111111 !important;
+}
+
+/* ── Datepicker popup arrow/caret (points to button) ── */
+.mat-datepicker-content::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 24px;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-left: 1.5px solid #f0f0f0;
+  border-top: 1.5px solid #f0f0f0;
+  transform: rotate(45deg);
+  border-radius: 2px 0 0 0;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════
+   USER DROPDOWN PANEL (renders outside component scope)
+══════════════════════════════════════════════════════ */
+.user-dropdown.mat-mdc-menu-panel {
+  border-radius: 18px !important;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.14),
+    0 4px 14px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #f0f0f0 !important;
+  overflow: hidden !important;
+  min-width: 220px !important;
+  padding: 0 !important;
+  margin-top: 8px !important;
+}
+
+.user-dropdown .mat-mdc-menu-content {
+  padding: 0 !important;
+}
+
+/* ── Datepicker popup arrow/caret (points to button) ── */
+.mat-datepicker-content::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 24px;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-left: 1.5px solid #f0f0f0;
+  border-top: 1.5px solid #f0f0f0;
+  transform: rotate(45deg);
+  border-radius: 2px 0 0 0;
+  z-index: 1;
+}
+:root {
+  --primary-color: #ff6b00;
+  --primary-dark: #e65c00;
+  --background-light: #f8fafc;
+  --sidebar-bg: #1e293b;
+  --text-dark: #1f2937;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: "Plus Jakarta Sans", Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-dark);
+}
+
+.mat-mdc-dialog-container {
+  border-radius: 24px !important;
+  overflow: visible !important;
+}
+.mat-mdc-dialog-surface {
+  background: #ffffff !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+.mat-mdc-dialog-content {
+  max-height: none !important;
+  overflow: visible !important;
+}
+.mdc-line-ripple {
+  display: none !important;
+}
+.mat-mdc-form-field-focus-overlay {
+  display: none !important;
+}
+.mat-mdc-input-element {
+  color: #222 !important;
+  font-weight: 500;
+}
+.mat-mdc-input-element::placeholder {
+  color: #888 !important;
+  opacity: 1;
+}
+.mat-mdc-floating-label {
+  color: #555 !important;
+  font-weight: 500;
+}
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: var(--primary-color) !important;
+}
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-color: #ccc !important;
+  border-width: 1px !important;
+}
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: var(--primary-color) !important;
+  border-width: 2px !important;
+}
+.mat-mdc-text-field-wrapper {
+  background: #fafafa;
+  border-radius: 8px;
+}
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading {
+  border-left-width: 2px !important;
+}
+
+/* ═══ DATEPICKER ═══ */
+.mat-datepicker-content {
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #f0f0f0 !important;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.16),
+    0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+  margin-top: 8px !important;
+}
+.mat-datepicker-content,
+.mat-datepicker-content * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.mat-calendar {
+  background: #ffffff !important;
+  padding: 8px !important;
+  width: 300px !important;
+}
+.mat-calendar-header {
+  background: linear-gradient(135deg, #ff6b00, #ff8c42) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 10px 16px !important;
+}
+.mat-calendar-period-button,
+.mat-calendar-period-button .mdc-button__label {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+}
+.mat-calendar-previous-button,
+.mat-calendar-next-button {
+  color: #ffffff !important;
+}
+.mat-calendar-previous-button svg,
+.mat-calendar-next-button svg {
+  fill: #ffffff !important;
+}
+.mat-calendar-table-header th,
+.mat-calendar-body-label {
+  color: #888 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+.mat-calendar-body-cell-content {
+  color: #111111 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  transition: all 0.15s ease !important;
+}
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled)
+  .mat-calendar-body-cell-content {
+  color: #111111 !important;
+}
+.mat-calendar-body-disabled .mat-calendar-body-cell-content {
+  color: #cccccc !important;
+}
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover
+  .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background: #fff3e6 !important;
+  color: #ff6b00 !important;
+}
+.mat-calendar-body-selected {
+  background: linear-gradient(135deg, #ff6b00, #ff8c42) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.45) !important;
+  font-weight: 800 !important;
+}
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border: 2px solid #ff6b00 !important;
+  background: transparent !important;
+  color: #ff6b00 !important;
+}
+.mat-multi-year-view .mat-calendar-body-cell-content,
+.mat-year-view .mat-calendar-body-cell-content {
+  color: #111111 !important;
+}
+
+/* ═══ USER DROPDOWN — force white, kill dark theme ═══ */
+/* Target every class variant Material might use */
+.user-dropdown.mat-mdc-menu-panel,
+.user-dropdown .mdc-menu-surface,
+.mat-mdc-menu-panel.user-dropdown {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 4px 14px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #efefef !important;
+  overflow: hidden !important;
+  min-width: 240px !important;
+  padding: 0 !important;
+  margin-top: 8px !important;
+}
+
+/* The inner content surface */
+.user-dropdown .mat-mdc-menu-content,
+.user-dropdown .mdc-menu-surface,
+.user-dropdown .mdc-list {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  padding: 0 !important;
+}
+
+/* Every button/item inside */
+.user-dropdown .mat-mdc-menu-item,
+.user-dropdown button.mat-mdc-menu-item,
+.user-dropdown .mdc-list-item {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
+.user-dropdown .mat-mdc-menu-item:hover,
+.user-dropdown button.mat-mdc-menu-item:hover {
+  background: #fef2f2 !important;
+}

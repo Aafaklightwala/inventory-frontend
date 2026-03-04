@@ -1,0 +1,155 @@
+<div class="auth-page">
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div class="auth-left">
+    <!-- Decorative orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Brand -->
+    <div class="brand-mark">
+      <div class="brand-logo">TK</div>
+      <div class="brand-name">Total<span>Karo</span></div>
+    </div>
+
+    <!-- Floating feature cards -->
+    <div class="feature-cards">
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+            />
+          </svg>
+        </div>
+        <div>
+          <div class="feat-title">Smart Invoicing</div>
+          <div class="feat-sub">GST-ready bills in seconds</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"
+            />
+          </svg>
+        </div>
+        <div>
+          <div class="feat-title">Live Dashboard</div>
+          <div class="feat-sub">Real-time business insights</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M20 6h-2.18c.07-.44.18-.88.18-1.33C18 2.54 15.6.09 12.74.38 11.18.55 9.84 1.45 9 2.74 8.16 1.45 6.82.55 5.26.38 2.4.09 0 2.54 0 4.67c0 .45.11.89.18 1.33H0L2 20c.27 1.24 1.33 2 2.6 2h14.8c1.27 0 2.33-.76 2.6-2L24 6h-4z"
+            />
+          </svg>
+        </div>
+        <div>
+          <div class="feat-title">Stock Manager</div>
+          <div class="feat-sub">Track products effortlessly</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tagline -->
+    <div class="tagline">
+      <h1>Billing made<br /><em>ridiculously easy</em></h1>
+      <p>
+        Manage products, generate GST invoices and grow your business — from one
+        screen.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT PANEL ═══ -->
+  <div class="auth-right">
+    <div class="auth-card">
+      <!-- Top -->
+      <div class="card-eyebrow">Welcome back 👋</div>
+      <h2 class="card-title">Sign in to TotalKaro</h2>
+      <p class="card-sub">Enter your credentials to continue</p>
+
+      <!-- Error -->
+      <div class="alert alert-error" *ngIf="errorMsg">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+          />
+        </svg>
+        {{ errorMsg }}
+      </div>
+
+      <!-- Fields -->
+      <div class="fields">
+        <div class="field">
+          <label>Email or Mobile</label>
+          <div class="inp" [class.active]="focusId">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="you@example.com or 9876543210"
+              [(ngModel)]="identifier"
+              (focus)="focusId = true"
+              (blur)="focusId = false"
+              (keyup.enter)="login()"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="inp" [class.active]="focusPwd">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+              />
+            </svg>
+            <input
+              [type]="showPwd ? 'text' : 'password'"
+              placeholder="Enter your password"
+              [(ngModel)]="password"
+              (focus)="focusPwd = true"
+              (blur)="focusPwd = false"
+              (keyup.enter)="login()"
+            />
+            <button class="eye-btn" (click)="showPwd = !showPwd" tabindex="-1">
+              <svg viewBox="0 0 24 24" *ngIf="!showPwd">
+                <path
+                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" *ngIf="showPwd">
+                <path
+                  d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <button class="btn-primary" (click)="login()" [class.loading]="loading">
+        <svg viewBox="0 0 24 24" *ngIf="!loading">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading" class="spin"></span>
+      </button>
+
+      <!-- Divider -->
+      <div class="or-divider"><span>Don't have an account?</span></div>
+
+      <!-- Switch link -->
+      <a routerLink="/signup" class="btn-secondary">Create account</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,752 @@
+/* ================= GOOGLE FONT ================= */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+* {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  box-sizing: border-box;
+}
+
+/* ================= PAGE WRAPPER ================= */
+.page-wrapper {
+  height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 36px 20px 36px;
+  background: #f0f2f8;
+  overflow: hidden;
+}
+
+/* ================= TOP HEADER ================= */
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.products-header h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.6px;
+  margin: 0;
+}
+
+/* ================= ACTION BAR ================= */
+.actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* ================= SEARCH BOX ================= */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 9px 16px;
+  border-radius: 50px;
+  border: 1.5px solid #e5e7eb;
+  width: 200px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 13px;
+  background: transparent;
+  color: #374151;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.search-box input::placeholder {
+  color: #9ca3af;
+}
+
+.search-icon-svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.search-box:focus-within {
+  border-color: #ff6b00;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+}
+
+/* ================= CATEGORY FILTER ================= */
+/* ================= CUSTOM CATEGORY DROPDOWN ================= */
+
+.category-dropdown {
+  position: relative;
+  width: 220px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Trigger */
+.dropdown-trigger {
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 50px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-trigger:hover {
+  border-color: #ff6b00;
+}
+
+.dropdown-trigger .arrow {
+  width: 18px;
+  height: 18px;
+  fill: #9ca3af;
+  transition: transform 0.25s ease;
+}
+
+.category-dropdown.open .arrow {
+  transform: rotate(180deg);
+}
+
+/* Panel */
+/* Panel */
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  max-height: 250px; /* 👈 controls dropdown height */
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+  animation: dropdownFade 0.2s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Search */
+.dropdown-search {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  outline: none;
+}
+
+.dropdown-search input:focus {
+  border-color: #ff6b00;
+  box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.1);
+}
+
+/* Options */
+.dropdown-options {
+  flex: 1; /* 👈 takes remaining space */
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+/* Smooth Scroll */
+.dropdown-options {
+  scroll-behavior: smooth;
+}
+
+/* Premium Scrollbar */
+.dropdown-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff6b00, #ff8533);
+  border-radius: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+  background: #ff6b00;
+}
+.dropdown-item {
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 107, 0, 0.08);
+  color: #ff6b00;
+}
+
+/* ================= OUTLINE BUTTONS ================= */
+.export-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.import-btn,
+.export-btn {
+  background: white;
+  color: #ff6b00;
+  border: 1.5px solid #ff6b00;
+  padding: 8px 14px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.import-btn:hover,
+.export-btn:hover {
+  background: #ff6b00;
+  color: white;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ================= ADD BUTTON ================= */
+.add-btn {
+  background: linear-gradient(135deg, #ff6b00, #ff8533);
+  color: white;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5);
+}
+
+/* ================================================================
+   TABLE CARD
+================================================================ */
+.table-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+/* ================================================================
+   STICKY ORANGE HEADER BAND — 7 columns
+================================================================ */
+.table-header-band {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #ff6b00, #ff8533);
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 26% 10% 14% 14% 12% 12% 12%;
+  align-items: center;
+  height: 52px;
+  border-radius: 22px 22px 0 0;
+}
+
+.header-cell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.header-cell span {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: white;
+}
+
+.header-sort-svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.header-cell:hover .header-sort-svg {
+  opacity: 1;
+}
+.header-cell.no-sort {
+  cursor: default;
+}
+
+/* ================================================================
+   SCROLL AREA
+================================================================ */
+.table-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 14px 16px 14px;
+  background: #f8f9fc;
+}
+
+.table-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 6px;
+}
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #ff8533;
+}
+
+/* ================================================================
+   MATERIAL TABLE BASE
+================================================================ */
+.product-table {
+  width: 100%;
+  background: transparent !important;
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+  table-layout: fixed;
+}
+
+.mat-mdc-table {
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.mat-mdc-header-row {
+  display: none !important;
+}
+
+/* ================================================================
+   BASE ROW — identical technique to the original working version:
+   background:white on the row itself + clip-path for rounded corners
+   + drop-shadow (renders outside clip-path) for the card shadow.
+================================================================ */
+.mat-mdc-row {
+  background: white !important;
+  border-radius: 16px !important;
+  clip-path: inset(0 round 16px);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.07));
+  transition:
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.28s ease !important;
+  cursor: pointer;
+  height: 70px !important;
+  position: relative;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
+/* ================================================================
+   ORANGE OVERLAY — full seamless row colour
+================================================================ */
+.mat-mdc-row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, #ff6b00 0%, #ff8c42 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ================================================================
+   HOVER — orange + lift + glow
+================================================================ */
+.mat-mdc-row:hover::after {
+  opacity: 1;
+}
+
+.mat-mdc-row:hover {
+  transform: translateY(-7px) scale(1.012) !important;
+  filter: drop-shadow(0 18px 32px rgba(255, 107, 0, 0.35))
+    drop-shadow(0 6px 12px rgba(255, 107, 0, 0.2)) !important;
+  z-index: 10;
+}
+
+/* ================================================================
+   SELECTED ROW
+================================================================ */
+.mat-mdc-row.selected-row::after {
+  background: linear-gradient(120deg, #e85e00 0%, #ff7825 100%);
+  opacity: 1;
+}
+
+.mat-mdc-row.selected-row {
+  transform: translateY(-7px) scale(1.012) !important;
+  filter: drop-shadow(0 20px 36px rgba(255, 107, 0, 0.42))
+    drop-shadow(0 6px 12px rgba(255, 107, 0, 0.22)) !important;
+  z-index: 9;
+}
+
+/* ================================================================
+   CELLS — transparent, sit above orange overlay
+================================================================ */
+.mat-mdc-cell {
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  color: #1f2937 !important;
+  font-weight: 500 !important;
+  border-bottom: none !important;
+  vertical-align: middle !important;
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease !important;
+}
+
+/* White text on orange */
+.mat-mdc-row:hover .mat-mdc-cell,
+.mat-mdc-row.selected-row .mat-mdc-cell {
+  color: white !important;
+}
+
+.mat-mdc-row:hover .product-name-text,
+.mat-mdc-row.selected-row .product-name-text {
+  color: white !important;
+}
+
+.mat-mdc-row:hover .price-value,
+.mat-mdc-row.selected-row .price-value {
+  color: white !important;
+}
+
+.mat-mdc-row:hover .normal-stock,
+.mat-mdc-row.selected-row .normal-stock {
+  color: white !important;
+}
+
+.mat-mdc-row:hover .grams-value,
+.mat-mdc-row.selected-row .grams-value {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.mat-mdc-row:hover .low-stock,
+.mat-mdc-row.selected-row .low-stock {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.mat-mdc-row:hover .product-avatar,
+.mat-mdc-row.selected-row .product-avatar {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.mat-mdc-row:hover .sku-chip,
+.mat-mdc-row.selected-row .sku-chip {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.mat-mdc-row:hover .category-chip,
+.mat-mdc-row.selected-row .category-chip {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.mat-mdc-row:hover .no-sku,
+.mat-mdc-row.selected-row .no-sku {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.mat-mdc-row:hover .action-icon-btn,
+.mat-mdc-row.selected-row .action-icon-btn {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.mat-mdc-row:hover .action-icon-btn svg,
+.mat-mdc-row.selected-row .action-icon-btn svg {
+  fill: white !important;
+}
+
+/* ================================================================
+   PRODUCT AVATAR
+================================================================ */
+.product-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-avatar {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #fff3e6, #ffd9b3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ff6b00;
+  border: 1.5px solid rgba(255, 107, 0, 0.15);
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.product-name-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.product-name-text {
+  font-weight: 700;
+  color: #111827;
+  font-size: 13px;
+  transition: color 0.25s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================================================================
+   SKU CHIP
+================================================================ */
+.sku-chip {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.no-sku {
+  color: #d1d5db;
+  font-weight: 500;
+  font-size: 13px;
+  transition: color 0.25s ease;
+}
+
+/* ================================================================
+   CATEGORY CHIP
+================================================================ */
+.category-chip {
+  background: #fff3e6;
+  color: #ff6b00;
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-block;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================================================================
+   PRICE / STOCK / GRAMS
+================================================================ */
+.price-value {
+  font-weight: 700;
+  color: #111827;
+  font-size: 13px;
+  transition: color 0.25s ease;
+}
+
+.low-stock {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1.5px solid rgba(220, 38, 38, 0.15);
+  display: inline-block;
+  min-width: 34px;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.normal-stock {
+  font-weight: 600;
+  color: #374151;
+  font-size: 13px;
+  transition: color 0.25s ease;
+}
+
+.grams-value {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 13px;
+  transition: color 0.25s ease;
+}
+
+/* ================================================================
+   ACTION ICON BUTTONS
+================================================================ */
+.actions-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.action-icon-btn {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border-radius: 9px !important;
+  border: none !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+  position: relative;
+  z-index: 2;
+}
+
+.action-icon-btn svg {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  transition: fill 0.25s ease;
+}
+
+.action-icon-btn.edit {
+  background: rgba(255, 107, 0, 0.1) !important;
+}
+.action-icon-btn.edit svg {
+  fill: #ff6b00;
+}
+.action-icon-btn.edit:hover {
+  background: rgba(255, 107, 0, 0.2) !important;
+  transform: scale(1.12);
+}
+
+.action-icon-btn.delete {
+  background: rgba(220, 38, 38, 0.08) !important;
+}
+.action-icon-btn.delete svg {
+  fill: #dc2626;
+}
+.action-icon-btn.delete:hover {
+  background: rgba(220, 38, 38, 0.18) !important;
+  transform: scale(1.12);
+}
+
+.mat-mdc-row:hover .action-icon-btn:hover,
+.mat-mdc-row.selected-row .action-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* ================================================================
+   PAGINATION FOOTER
+================================================================ */
+.table-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  background: white;
+  border-top: 1px solid #f0f0f0;
+  padding: 0 12px;
+  border-radius: 0 0 22px 22px;
+}
+
+.mat-mdc-paginator {
+  background: transparent !important;
+  color: #374151 !important;
+}
+.mat-mdc-paginator-range-label,
+.mat-mdc-paginator-page-size-label {
+  color: #6b7280 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+}
+.mat-mdc-paginator .mat-mdc-icon-button {
+  color: #ff6b00 !important;
+}
+.mat-mdc-paginator .mat-mdc-icon-button:disabled {
+  color: #d1d5db !important;
+}
+
+/* ================================================================
+   COLUMN WIDTHS — 7 columns = 100%
+================================================================ */
+.mat-column-name {
+  width: 26%;
+}
+.mat-column-sku {
+  width: 10%;
+}
+.mat-column-category {
+  width: 14%;
+}
+.mat-column-price {
+  width: 14%;
+}
+.mat-column-stock {
+  width: 12%;
+}
+.mat-column-grams {
+  width: 12%;
+}
+.mat-column-actions {
+  width: 12%;
+}

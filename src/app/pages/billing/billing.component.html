@@ -1,0 +1,419 @@
+<div class="page-wrapper">
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="top-bar">
+    <h2 class="page-title">Billing</h2>
+    <div class="bill-meta">
+      <span class="bill-no">Bill #{{ billNumber }}</span>
+      <span class="live-wrap"><span class="live-dot"></span>Live</span>
+    </div>
+  </div>
+
+  <!-- ═══ LAYOUT ═══ -->
+  <div class="billing-layout">
+    <!-- ════════ LEFT — PICKER + CART ════════ -->
+    <div class="left-col">
+      <!-- ADD PRODUCTS CARD -->
+      <div class="picker-card">
+        <div class="picker-hdr">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+          </svg>
+          <span>Add Products</span>
+          <div class="cart-badge" *ngIf="selectedItems.length">
+            {{ selectedItems.length }}
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-wrap">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#111"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search by name or SKU…"
+            [(ngModel)]="searchQuery"
+            (input)="filterProducts()"
+            class="search-inp"
+            autocomplete="off"
+          />
+          <button
+            class="s-clear"
+            *ngIf="searchQuery"
+            (click)="searchQuery = ''; filterProducts()"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Category tabs -->
+        <div class="cat-scroll">
+          <button
+            class="cat-pill"
+            [class.active]="activeCategory === ''"
+            (click)="setCategory('')"
+          >
+            All
+          </button>
+          <button
+            class="cat-pill"
+            *ngFor="let c of categories"
+            [class.active]="activeCategory === c"
+            (click)="setCategory(c)"
+          >
+            {{ c }}
+          </button>
+        </div>
+
+        <!-- Product grid -->
+        <div class="prod-grid">
+          <div
+            class="prod-tile"
+            *ngFor="let p of filteredProducts"
+            [class.selected]="isInCart(p.id)"
+            (click)="toggleProduct(p)"
+          >
+            <div class="pt-check" *ngIf="isInCart(p.id)">
+              <svg viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+            </div>
+            <div class="pt-avatar">{{ p.name?.charAt(0)?.toUpperCase() }}</div>
+            <div class="pt-name">{{ p.name }}</div>
+            <div class="pt-bottom">
+              <span class="pt-sku" *ngIf="p.sku">{{ p.sku }}</span>
+              <span class="pt-price">₹{{ p.price }}</span>
+            </div>
+          </div>
+
+          <div class="no-prod" *ngIf="filteredProducts.length === 0">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+              />
+            </svg>
+            <span>No products found</span>
+          </div>
+        </div>
+      </div>
+      <!-- /picker-card -->
+
+      <!-- CART TABLE -->
+      <div class="cart-card" *ngIf="selectedItems.length > 0">
+        <div class="cart-hdr">
+          <span
+            >Cart &nbsp;<strong>{{ selectedItems.length }}</strong> item{{
+              selectedItems.length > 1 ? "s" : ""
+            }}</span
+          >
+          <button class="clear-all" (click)="clearCart()">Clear all</button>
+        </div>
+
+        <div class="cart-scroll">
+          <table class="cart-tbl">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price (₹)</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedItems; let i = index">
+                <td>
+                  <div class="c-name">
+                    <div class="c-av">
+                      {{ item.name?.charAt(0)?.toUpperCase() }}
+                    </div>
+                    <span>{{ item.name }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="qty-ctrl">
+                    <button (click)="changeQty(i, -1)">−</button>
+                    <input type="number" min="1" [(ngModel)]="item.qty" />
+                    <button (click)="changeQty(i, 1)">+</button>
+                  </div>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="item.custom_price"
+                    class="price-cell"
+                  />
+                </td>
+                <td class="amt-cell">₹{{ item.qty * item.custom_price }}</td>
+                <td>
+                  <button class="row-del" (click)="removeItem(i)">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                      />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty hint -->
+      <div class="empty-hint" *ngIf="selectedItems.length === 0">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03.25H17l1.8-9H6.21l-.94-4H2v2h2.34L7.42 19H7c-.55 0-1 .45-1 1s.45 1 1 1h10c.55 0 1-.45 1-1s-.45-1-1-1H8.31l-.14-.75z"
+          />
+        </svg>
+        <p>Tap any product card to add it to the bill</p>
+      </div>
+    </div>
+    <!-- /left-col -->
+
+    <!-- ════════ RIGHT — SUMMARY ════════ -->
+    <div class="right-col">
+      <div class="summary-card">
+        <div class="sum-hdr">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+            />
+          </svg>
+          <span>Bill Summary</span>
+        </div>
+
+        <div class="sum-body">
+          <!-- item lines -->
+          <div class="sum-lines" *ngIf="selectedItems.length">
+            <div class="sum-line" *ngFor="let item of selectedItems">
+              <div class="sl-left">
+                <div class="sl-name">{{ item.name }}</div>
+                <div class="sl-sub">
+                  {{ item.qty }} × ₹{{ item.custom_price }}
+                </div>
+              </div>
+              <div class="sl-amt">₹{{ item.qty * item.custom_price }}</div>
+            </div>
+          </div>
+
+          <div class="sum-empty" *ngIf="!selectedItems.length">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+              />
+            </svg>
+            <p>No items added yet</p>
+          </div>
+
+          <div class="sum-divider"></div>
+
+          <div class="calc-block">
+            <div class="calc-row">
+              <span>Subtotal</span>
+              <strong>₹{{ subTotal | number: "1.2-2" }}</strong>
+            </div>
+            <div class="calc-row">
+              <span>GST 5%</span>
+              <strong>₹{{ gstAmount | number: "1.2-2" }}</strong>
+            </div>
+            <div class="calc-row disc-row" *ngIf="discountApplied > 0">
+              <span>Discount</span>
+              <strong class="disc-val"
+                >−₹{{ discountApplied | number: "1.2-2" }}</strong
+              >
+            </div>
+          </div>
+
+          <div class="grand-row">
+            <span>Total Payable</span>
+            <span class="grand-amt">₹{{ finalTotal | number: "1.2-2" }}</span>
+          </div>
+        </div>
+        <!-- /sum-body -->
+
+        <div class="sum-foot">
+          <button
+            class="btn-proceed"
+            (click)="openCheckout()"
+            [disabled]="!selectedItems.length"
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- /right-col -->
+  </div>
+  <!-- /billing-layout -->
+
+  <!-- ═══════════════════════════════════════
+       CHECKOUT MODAL
+  ═══════════════════════════════════════ -->
+  <div class="overlay" *ngIf="showCheckout">
+    <div class="checkout-modal">
+      <!-- close -->
+      <button class="m-close" (click)="showCheckout = false">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+          />
+        </svg>
+      </button>
+
+      <!-- Header -->
+      <div class="m-head">
+        <div class="m-icon">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3 class="m-title">Complete Bill</h3>
+          <p class="m-sub">Customer info &amp; payment method</p>
+        </div>
+      </div>
+
+      <!-- Total banner -->
+      <div class="m-banner">
+        <div>
+          <div class="mb-label">Total Payable</div>
+          <div class="mb-amt">₹{{ finalTotal | number: "1.2-2" }}</div>
+          <div class="mb-gst">
+            Includes 5% GST · ₹{{ gstAmount | number: "1.2-2" }}
+          </div>
+        </div>
+        <div class="mb-items">
+          {{ selectedItems.length }} item{{
+            selectedItems.length !== 1 ? "s" : ""
+          }}
+        </div>
+      </div>
+
+      <!-- Fields -->
+      <div class="m-fields">
+        <div class="mf-row">
+          <div class="mf-grp">
+            <label>Customer Name</label>
+            <input
+              type="text"
+              placeholder="e.g. Rahul Sharma"
+              [(ngModel)]="customerName"
+            />
+          </div>
+          <div class="mf-grp">
+            <label>Mobile Number</label>
+            <input
+              type="text"
+              placeholder="10-digit number"
+              [(ngModel)]="customerMobile"
+              maxlength="10"
+            />
+          </div>
+        </div>
+
+        <div class="mf-row">
+          <div class="mf-grp">
+            <label>Discount (₹) <span class="opt-tag">optional</span></label>
+            <div class="pfx-wrap">
+              <span class="pfx">₹</span>
+              <input
+                type="number"
+                placeholder="0"
+                [(ngModel)]="discountAmount"
+                min="0"
+                (input)="applyDiscount()"
+                class="pfx-inp"
+              />
+            </div>
+          </div>
+          <div class="mf-grp">
+            <label>Payment Mode</label>
+            <div class="pay-row">
+              <button
+                class="pay-btn"
+                [class.active]="paymentMode === 'cash'"
+                (click)="paymentMode = 'cash'"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
+                  />
+                </svg>
+                Cash
+              </button>
+              <button
+                class="pay-btn"
+                [class.active]="paymentMode === 'razorpay'"
+                (click)="paymentMode = 'razorpay'"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                  />
+                </svg>
+                Razorpay
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /m-fields -->
+
+      <!-- QR -->
+      <div class="qr-area" *ngIf="paymentMode === 'razorpay'">
+        <div class="qr-box">
+          <img src="assets/razorpay-qr.png" alt="Scan to Pay" />
+        </div>
+        <p class="qr-note">
+          Scan QR &amp; pay ₹{{ finalTotal | number: "1.2-2" }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="m-actions">
+        <button class="btn-cancel-bill" (click)="cancelAndClose()">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+            />
+          </svg>
+          Cancel Bill
+        </button>
+        <button class="btn-print" (click)="printInvoice()">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"
+            />
+          </svg>
+          Print
+        </button>
+        <button
+          class="btn-confirm"
+          (click)="createInvoice()"
+          [disabled]="!selectedItems.length"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          {{ paymentMode === "cash" ? "Mark as Paid" : "Confirm Payment" }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /overlay -->
+</div>
