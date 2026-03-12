@@ -31,24 +31,48 @@
 <div class="invoice-table-card">
   <div class="table-scroll">
     <table mat-table [dataSource]="dataSource" matSort>
-      <!-- ID -->
+      <!-- # -->
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
         <td mat-cell *matCellDef="let element">{{ element.id }}</td>
       </ng-container>
 
-      <!-- Invoice -->
+      <!-- Invoice Number + Proforma tag -->
       <ng-container matColumnDef="invoice_number">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Invoice</th>
         <td mat-cell *matCellDef="let element">
-          {{ element.invoice_number }}
+          <div class="inv-num-cell">
+            <span>{{ element.invoice_number }}</span>
+            <span
+              class="tag-proforma"
+              *ngIf="element.invoice_type === 'proforma'"
+              >Proforma</span
+            >
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Customer -->
+      <ng-container matColumnDef="customer_name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="cust-cell">
+            <div class="cust-av">
+              {{ (element.customer_name || "W").charAt(0).toUpperCase() }}
+            </div>
+            <span>{{ element.customer_name || "Walk-in" }}</span>
+          </div>
         </td>
       </ng-container>
 
       <!-- Total -->
       <ng-container matColumnDef="total">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
-        <td mat-cell *matCellDef="let element">₹{{ element.final_total }}</td>
+        <td mat-cell *matCellDef="let element">
+          <span class="total-val"
+            >₹{{ element.final_total | number: "1.2-2" }}</span
+          >
+        </td>
       </ng-container>
 
       <!-- Status -->
@@ -58,29 +82,36 @@
           <span
             class="badge"
             [ngClass]="{
-              cancelled: element.status === 'cancelled',
-              paid:
-                element.payment_status === 'paid' &&
-                element.status !== 'cancelled',
-              pending:
-                element.payment_status === 'pending' &&
-                element.status !== 'cancelled',
+              cancelled: element.payment_status === 'cancelled',
+              paid: element.payment_status === 'paid',
+              pending: element.payment_status === 'pending',
             }"
           >
-            {{
-              element.status === "cancelled"
-                ? "Cancelled"
-                : element.payment_status
-            }}
+            {{ element.payment_status | titlecase }}
           </span>
         </td>
       </ng-container>
 
-      <!-- Payment -->
+      <!-- Payment Mode -->
       <ng-container matColumnDef="payment_mode">
         <th mat-header-cell *matHeaderCellDef>Payment</th>
         <td mat-cell *matCellDef="let element">
-          {{ element.payment_mode }}
+          <div class="pay-mode-cell">
+            <svg *ngIf="element.payment_mode === 'cash'" viewBox="0 0 24 24">
+              <path
+                d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
+              />
+            </svg>
+            <svg
+              *ngIf="element.payment_mode === 'razorpay'"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+              />
+            </svg>
+            <span>{{ element.payment_mode | titlecase }}</span>
+          </div>
         </td>
       </ng-container>
 
@@ -92,13 +123,51 @@
         </td>
       </ng-container>
 
-      <!-- Action -->
+      <!-- Actions -->
       <ng-container matColumnDef="action">
-        <th mat-header-cell *matHeaderCellDef>Action</th>
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
-          <button class="download-btn" (click)="downloadInvoice(element.id)">
-            ⬇
-          </button>
+          <div class="action-cell">
+            <!-- Convert to GST — only for proforma invoices that aren't cancelled -->
+            <button
+              class="btn-convert"
+              *ngIf="
+                element.invoice_type === 'proforma' &&
+                element.payment_status !== 'cancelled'
+              "
+              (click)="convertToGst(element)"
+              title="Convert to GST Invoice"
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"
+                />
+              </svg>
+              Convert to GST
+            </button>
+
+            <!-- Download — uses HttpClient blob so JWT token is sent -->
+            <button
+              class="download-btn"
+              (click)="downloadInvoice(element.id)"
+              [class.downloading]="downloadingId === element.id"
+              [disabled]="downloadingId === element.id"
+              title="Download Invoice PDF"
+            >
+              <svg
+                *ngIf="downloadingId === element.id"
+                class="spin"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
+                />
+              </svg>
+              <svg *ngIf="downloadingId !== element.id" viewBox="0 0 24 24">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+              </svg>
+            </button>
+          </div>
         </td>
       </ng-container>
 
@@ -107,13 +176,76 @@
     </table>
   </div>
 
-  <!-- SAME PAGINATOR STYLE AS PRODUCTS -->
   <div class="table-footer">
     <mat-paginator
       [pageSize]="10"
       [pageSizeOptions]="[10, 20, 50]"
       showFirstLastButtons
-    >
-    </mat-paginator>
+    ></mat-paginator>
+  </div>
+</div>
+
+<!-- ═══ CONVERT TO GST CONFIRM MODAL ═══ -->
+<div class="overlay" *ngIf="showConvertModal">
+  <div class="convert-modal">
+    <button class="m-close" (click)="showConvertModal = false">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+        />
+      </svg>
+    </button>
+
+    <div class="cm-icon">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"
+        />
+      </svg>
+    </div>
+
+    <h3 class="cm-title">Convert to GST Invoice?</h3>
+    <p class="cm-sub">
+      GST (5%) will be added to
+      <strong>{{ selectedInvoice?.invoice_number }}</strong
+      >. A new invoice number will be assigned.
+    </p>
+
+    <div class="cm-preview" *ngIf="selectedInvoice">
+      <div class="cm-row">
+        <span>Subtotal</span>
+        <strong>₹{{ selectedInvoice.sub_total | number: "1.2-2" }}</strong>
+      </div>
+      <div class="cm-row">
+        <span>GST 5% (to be added)</span>
+        <strong class="cm-gst"
+          >+₹{{
+            getGstPreview(selectedInvoice.sub_total) | number: "1.2-2"
+          }}</strong
+        >
+      </div>
+      <div class="cm-row cm-total-row">
+        <span>New Total</span>
+        <strong class="cm-total"
+          >₹{{ getNewTotal(selectedInvoice) | number: "1.2-2" }}</strong
+        >
+      </div>
+    </div>
+
+    <div class="cm-actions">
+      <button class="cm-btn-cancel" (click)="showConvertModal = false">
+        Cancel
+      </button>
+      <button
+        class="cm-btn-confirm"
+        (click)="confirmConvert()"
+        [disabled]="converting"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+        {{ converting ? "Converting…" : "Yes, Convert to GST" }}
+      </button>
+    </div>
   </div>
 </div>

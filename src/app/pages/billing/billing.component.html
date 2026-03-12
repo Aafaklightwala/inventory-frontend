@@ -4,27 +4,38 @@
     <h2 class="page-title">Billing</h2>
     <div class="bill-meta">
       <span class="bill-no">Bill #{{ billNumber }}</span>
+
+      <!-- ── PROFORMA TOGGLE ── -->
+      <label class="proforma-toggle" [class.active]="isProforma">
+        <input
+          type="checkbox"
+          [(ngModel)]="isProforma"
+          (change)="applyDiscount()"
+        />
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">Proforma Invoice</span>
+      </label>
+
       <span class="live-wrap"><span class="live-dot"></span>Live</span>
     </div>
   </div>
 
   <!-- ═══ LAYOUT ═══ -->
   <div class="billing-layout">
-    <!-- ════════ LEFT — PICKER + CART ════════ -->
+    <!-- ════════ LEFT ════════ -->
     <div class="left-col">
-      <!-- ADD PRODUCTS CARD -->
       <div class="picker-card">
         <div class="picker-hdr">
           <svg viewBox="0 0 24 24">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
           </svg>
           <span>Add Products</span>
+          <span class="proforma-badge" *ngIf="isProforma">No GST</span>
           <div class="cart-badge" *ngIf="selectedItems.length">
             {{ selectedItems.length }}
           </div>
         </div>
 
-        <!-- Search -->
         <div class="search-wrap">
           <svg
             viewBox="0 0 24 24"
@@ -54,7 +65,6 @@
           </button>
         </div>
 
-        <!-- Category tabs -->
         <div class="cat-scroll">
           <button
             class="cat-pill"
@@ -73,7 +83,6 @@
           </button>
         </div>
 
-        <!-- Product grid -->
         <div class="prod-grid">
           <div
             class="prod-tile"
@@ -93,7 +102,6 @@
               <span class="pt-price">₹{{ p.price }}</span>
             </div>
           </div>
-
           <div class="no-prod" *ngIf="filteredProducts.length === 0">
             <svg viewBox="0 0 24 24">
               <path
@@ -104,9 +112,7 @@
           </div>
         </div>
       </div>
-      <!-- /picker-card -->
 
-      <!-- CART TABLE -->
       <div class="cart-card" *ngIf="selectedItems.length > 0">
         <div class="cart-hdr">
           <span
@@ -116,7 +122,6 @@
           >
           <button class="clear-all" (click)="clearCart()">Clear all</button>
         </div>
-
         <div class="cart-scroll">
           <table class="cart-tbl">
             <thead>
@@ -168,7 +173,6 @@
         </div>
       </div>
 
-      <!-- Empty hint -->
       <div class="empty-hint" *ngIf="selectedItems.length === 0">
         <svg viewBox="0 0 24 24">
           <path
@@ -178,22 +182,21 @@
         <p>Tap any product card to add it to the bill</p>
       </div>
     </div>
-    <!-- /left-col -->
 
     <!-- ════════ RIGHT — SUMMARY ════════ -->
     <div class="right-col">
       <div class="summary-card">
-        <div class="sum-hdr">
+        <div class="sum-hdr" [class.proforma-hdr]="isProforma">
           <svg viewBox="0 0 24 24">
             <path
               d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
             />
           </svg>
-          <span>Bill Summary</span>
+          <span>{{ isProforma ? "Proforma Summary" : "Bill Summary" }}</span>
+          <span class="sum-proforma-tag" *ngIf="isProforma">No GST</span>
         </div>
 
         <div class="sum-body">
-          <!-- item lines -->
           <div class="sum-lines" *ngIf="selectedItems.length">
             <div class="sum-line" *ngFor="let item of selectedItems">
               <div class="sl-left">
@@ -222,9 +225,13 @@
               <span>Subtotal</span>
               <strong>₹{{ subTotal | number: "1.2-2" }}</strong>
             </div>
-            <div class="calc-row">
+            <div class="calc-row" *ngIf="!isProforma">
               <span>GST 5%</span>
               <strong>₹{{ gstAmount | number: "1.2-2" }}</strong>
+            </div>
+            <div class="calc-row no-gst-row" *ngIf="isProforma">
+              <span>GST</span>
+              <strong class="no-gst-val">Not Applied</strong>
             </div>
             <div class="calc-row disc-row" *ngIf="discountApplied > 0">
               <span>Discount</span>
@@ -234,37 +241,34 @@
             </div>
           </div>
 
-          <div class="grand-row">
+          <div class="grand-row" [class.proforma-grand]="isProforma">
             <span>Total Payable</span>
             <span class="grand-amt">₹{{ finalTotal | number: "1.2-2" }}</span>
           </div>
         </div>
-        <!-- /sum-body -->
 
         <div class="sum-foot">
           <button
             class="btn-proceed"
+            [class.btn-proceed-proforma]="isProforma"
             (click)="openCheckout()"
             [disabled]="!selectedItems.length"
           >
             <svg viewBox="0 0 24 24">
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
             </svg>
-            Proceed to Checkout
+            {{ isProforma ? "Create Proforma Invoice" : "Proceed to Checkout" }}
           </button>
         </div>
       </div>
     </div>
-    <!-- /right-col -->
   </div>
-  <!-- /billing-layout -->
 
-  <!-- ═══════════════════════════════════════
+  <!-- ═══════════════════════════════════════════
        CHECKOUT MODAL
-  ═══════════════════════════════════════ -->
+  ═══════════════════════════════════════════ -->
   <div class="overlay" *ngIf="showCheckout">
     <div class="checkout-modal">
-      <!-- close -->
       <button class="m-close" (click)="showCheckout = false">
         <svg viewBox="0 0 24 24">
           <path
@@ -273,9 +277,21 @@
         </svg>
       </button>
 
-      <!-- Header -->
+      <!-- Proforma info banner -->
+      <div class="proforma-alert" *ngIf="isProforma">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+          />
+        </svg>
+        <span
+          >This is a <strong>Proforma Invoice</strong> — GST will NOT be
+          charged</span
+        >
+      </div>
+
       <div class="m-head">
-        <div class="m-icon">
+        <div class="m-icon" [class.proforma-icon]="isProforma">
           <svg viewBox="0 0 24 24">
             <path
               d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
@@ -283,18 +299,28 @@
           </svg>
         </div>
         <div>
-          <h3 class="m-title">Complete Bill</h3>
-          <p class="m-sub">Customer info &amp; payment method</p>
+          <h3 class="m-title">
+            {{ isProforma ? "Create Proforma Invoice" : "Complete Bill" }}
+          </h3>
+          <p class="m-sub">
+            {{
+              isProforma
+                ? "No GST · Quotation invoice"
+                : "Customer info & payment method"
+            }}
+          </p>
         </div>
       </div>
 
-      <!-- Total banner -->
-      <div class="m-banner">
+      <div class="m-banner" [class.proforma-banner]="isProforma">
         <div>
           <div class="mb-label">Total Payable</div>
           <div class="mb-amt">₹{{ finalTotal | number: "1.2-2" }}</div>
-          <div class="mb-gst">
+          <div class="mb-gst" *ngIf="!isProforma">
             Includes 5% GST · ₹{{ gstAmount | number: "1.2-2" }}
+          </div>
+          <div class="mb-gst" *ngIf="isProforma">
+            No GST applied · Proforma Invoice
           </div>
         </div>
         <div class="mb-items">
@@ -304,7 +330,7 @@
         </div>
       </div>
 
-      <!-- Fields -->
+      <!-- ── FIELDS ── -->
       <div class="m-fields">
         <div class="mf-row">
           <div class="mf-grp">
@@ -341,12 +367,15 @@
               />
             </div>
           </div>
+
+          <!-- ── PAYMENT MODE — shown for BOTH gst and proforma ── -->
           <div class="mf-grp">
             <label>Payment Mode</label>
             <div class="pay-row">
               <button
                 class="pay-btn"
                 [class.active]="paymentMode === 'cash'"
+                [class.pay-btn-proforma]="isProforma && paymentMode === 'cash'"
                 (click)="paymentMode = 'cash'"
               >
                 <svg viewBox="0 0 24 24">
@@ -359,6 +388,9 @@
               <button
                 class="pay-btn"
                 [class.active]="paymentMode === 'razorpay'"
+                [class.pay-btn-proforma]="
+                  isProforma && paymentMode === 'razorpay'
+                "
                 (click)="paymentMode = 'razorpay'"
               >
                 <svg viewBox="0 0 24 24">
@@ -372,9 +404,8 @@
           </div>
         </div>
       </div>
-      <!-- /m-fields -->
 
-      <!-- QR -->
+      <!-- QR for razorpay (both gst and proforma) -->
       <div class="qr-area" *ngIf="paymentMode === 'razorpay'">
         <div class="qr-box">
           <img src="assets/razorpay-qr.png" alt="Scan to Pay" />
@@ -384,7 +415,34 @@
         </p>
       </div>
 
-      <!-- Actions -->
+      <!-- ── PROFORMA: payment pending notice + Mark as Paid button ── -->
+      <div class="proforma-pay-notice" *ngIf="isProforma">
+        <div class="ppn-left">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+            />
+          </svg>
+          <div>
+            <div class="ppn-title">Payment Status</div>
+            <div class="ppn-sub">
+              Proforma invoices are saved as <strong>pending</strong> by default
+            </div>
+          </div>
+        </div>
+        <button
+          class="btn-mark-paid"
+          (click)="markAsPaid = !markAsPaid"
+          [class.active]="markAsPaid"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          {{ markAsPaid ? "Payment Done ✓" : "Mark as Paid" }}
+        </button>
+      </div>
+
+      <!-- ── ACTIONS ── -->
       <div class="m-actions">
         <button class="btn-cancel-bill" (click)="cancelAndClose()">
           <svg viewBox="0 0 24 24">
@@ -404,16 +462,24 @@
         </button>
         <button
           class="btn-confirm"
+          [class.btn-proforma]="isProforma"
           (click)="createInvoice()"
           [disabled]="!selectedItems.length"
         >
           <svg viewBox="0 0 24 24">
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
           </svg>
-          {{ paymentMode === "cash" ? "Mark as Paid" : "Confirm Payment" }}
+          {{
+            isProforma
+              ? markAsPaid
+                ? "Save & Mark Paid"
+                : "Save Proforma"
+              : paymentMode === "cash"
+                ? "Mark as Paid"
+                : "Confirm Payment"
+          }}
         </button>
       </div>
     </div>
   </div>
-  <!-- /overlay -->
 </div>

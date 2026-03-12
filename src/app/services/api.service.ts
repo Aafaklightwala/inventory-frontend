@@ -44,4 +44,24 @@ export class ApiService {
   getInvoiceDetails(id: number) {
     return this.http.get(`${this.baseUrl}/invoices/${id}`);
   }
+
+  convertInvoiceToGst(invoiceId: number) {
+    return this.http.post(
+      `${this.baseUrl}/invoices/convert-to-gst/${invoiceId}`,
+      {},
+    );
+  }
+  downloadInvoicePdf(id: number) {
+    return this.http.get(`${this.baseUrl}/invoices/${id}/download`, {
+      responseType: 'blob',
+    });
+  }
+
+  // ── Export invoices by date range ─────────────
+  exportInvoicesByDate(start: string, end: string) {
+    return this.http.get(
+      `${this.baseUrl}/invoices/export?start=${start}&end=${end}`,
+      { responseType: 'blob' },
+    );
+  }
 }
