@@ -1,0 +1,648 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+* {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  box-sizing: border-box;
+}
+
+.profile-page {
+  padding: 24px 32px 40px;
+  background: #f0f2f8;
+  min-height: calc(100vh - 70px);
+}
+
+/* ══════════════════════════════════════════════
+   HERO HEADER
+══════════════════════════════════════════════ */
+.profile-hero {
+  position: relative;
+  background: linear-gradient(135deg, #ff6b00, #ff8533);
+  border-radius: 24px;
+  padding: 32px 36px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 28px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(255, 107, 0, 0.3);
+}
+
+/* Decorative orbs */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.15;
+}
+.orb-a {
+  width: 300px;
+  height: 300px;
+  background: white;
+  top: -120px;
+  right: -80px;
+}
+.orb-b {
+  width: 180px;
+  height: 180px;
+  background: white;
+  bottom: -80px;
+  left: 30%;
+}
+
+/* ── Logo zone ─────────────────────────────── */
+.logo-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.logo-ring {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2.5px dashed rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.logo-ring:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.3);
+}
+.logo-ring.has-logo {
+  border-style: solid;
+  border-color: white;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+}
+
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.9);
+}
+.logo-placeholder svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+.logo-placeholder span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.logo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: inherit;
+}
+.logo-overlay svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+.logo-ring:hover .logo-overlay {
+  opacity: 1;
+}
+.logo-ring:not(.has-logo) .logo-overlay {
+  display: none;
+}
+
+.hidden-file {
+  display: none;
+}
+
+.logo-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.logo-status.uploading {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+.logo-status.success {
+  background: rgba(34, 197, 94, 0.25);
+  color: #bbf7d0;
+}
+
+/* ── Hero info ─────────────────────────────── */
+.hero-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  z-index: 1;
+}
+
+.hero-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.hero-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 2px;
+  letter-spacing: -0.4px;
+}
+.hero-company {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 8px;
+}
+.hero-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-role {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.badge-status {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.badge-status.active {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #bbf7d0;
+}
+
+/* ── Hero actions ──────────────────────────── */
+.hero-actions {
+  margin-left: auto;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.btn-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: #ff6b00;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+}
+.btn-edit svg {
+  width: 15px;
+  height: 15px;
+  fill: #ff6b00;
+}
+.btn-edit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.edit-action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-cancel-edit {
+  padding: 11px 18px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel-edit:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 12px;
+  border: none;
+  background: white;
+  color: #ff6b00;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  min-width: 130px;
+}
+.btn-save:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════
+   ALERTS
+══════════════════════════════════════════════ */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  animation: fadeIn 0.25s ease;
+}
+.alert svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.alert-success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1.5px solid #bbf7d0;
+}
+.alert-success svg {
+  fill: #15803d;
+}
+.alert-error {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1.5px solid #fca5a5;
+}
+.alert-error svg {
+  fill: #dc2626;
+}
+.alert.sm {
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   GRID
+══════════════════════════════════════════════ */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Password card spans full width */
+.pwd-card {
+  grid-column: 1 / -1;
+}
+
+/* ══════════════════════════════════════════════
+   INFO CARDS
+══════════════════════════════════════════════ */
+.info-card {
+  background: white;
+  border-radius: 20px;
+  padding: 26px 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.card-icon.orange {
+  background: linear-gradient(135deg, #fff3e6, #ffd9b3);
+}
+.card-icon.orange svg {
+  fill: #ff6b00;
+}
+.card-icon.purple {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+}
+.card-icon.purple svg {
+  fill: #7c3aed;
+}
+.card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.card-head h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* ── Field grid ────────────────────────────── */
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 0;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field.full-width {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.locked-tag {
+  background: #f3f4f6;
+  color: #888;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* View mode */
+.inp-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: #f8f9fc;
+  border: 1.5px solid #f0f0f0;
+  min-height: 44px;
+}
+.inp-wrap.locked {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+.inp-wrap.locked svg {
+  width: 14px;
+  height: 14px;
+  fill: #9ca3af;
+  flex-shrink: 0;
+}
+.inp-view {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+.gst-val {
+  font-family: monospace;
+  letter-spacing: 1px;
+  color: #ff6b00;
+}
+
+/* Edit mode */
+.inp-wrap.active-border {
+  background: white;
+  border-color: #e5e7eb;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.inp-wrap.active-border:focus-within {
+  border-color: #ff6b00;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+}
+.inp-wrap.active-border svg {
+  width: 16px;
+  height: 16px;
+  fill: #9ca3af;
+  flex-shrink: 0;
+}
+.inp-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  background: transparent;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+.inp-wrap input::placeholder {
+  color: #bbb;
+  font-weight: 500;
+}
+
+/* ── Meta row ──────────────────────────────── */
+.meta-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1.5px dashed #f0f0f0;
+}
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+.meta-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+}
+.status-val {
+  color: #d97706;
+}
+.status-val.active {
+  color: #15803d;
+}
+
+/* ── Password card ─────────────────────────── */
+.pwd-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.eye-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+}
+.eye-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: #9ca3af;
+}
+.eye-btn:hover svg {
+  fill: #555;
+}
+
+.btn-pwd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #9f67fa);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  transition: all 0.2s;
+  min-width: 180px;
+}
+.btn-pwd svg {
+  width: 16px;
+  height: 16px;
+  fill: white;
+}
+.btn-pwd:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.45);
+}
+.btn-pwd:disabled {
+  background: #e5e7eb;
+  color: #aaa;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ── Spinner ───────────────────────────────── */
+.btn-spin {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Responsive ────────────────────────────── */
+@media (max-width: 768px) {
+  .profile-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px;
+  }
+  .hero-actions {
+    margin-left: 0;
+  }
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .pwd-card {
+    grid-column: 1;
+  }
+  .pwd-fields {
+    grid-template-columns: 1fr;
+  }
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+  .field.full-width {
+    grid-column: 1;
+  }
+}

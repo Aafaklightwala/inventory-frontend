@@ -1,0 +1,338 @@
+<div class="profile-page">
+  <!-- ══ HERO HEADER ══════════════════════════════════════════ -->
+  <div class="profile-hero">
+    <!-- Decorative orbs matching login page -->
+    <div class="hero-orb orb-a"></div>
+    <div class="hero-orb orb-b"></div>
+
+    <!-- Logo upload zone -->
+    <div class="logo-zone">
+      <div
+        class="logo-ring"
+        (click)="triggerLogoUpload()"
+        [class.has-logo]="profile?.company_logo"
+      >
+        <img
+          *ngIf="profile?.company_logo"
+          [src]="profile.company_logo"
+          alt="Company Logo"
+          class="logo-img"
+        />
+        <div *ngIf="!profile?.company_logo" class="logo-placeholder">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"
+            />
+          </svg>
+          <span>Upload Logo</span>
+        </div>
+        <div class="logo-overlay">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+            />
+          </svg>
+        </div>
+      </div>
+      <input
+        #logoInput
+        type="file"
+        accept="image/*"
+        class="hidden-file"
+        (change)="onLogoSelected($event)"
+      />
+      <div *ngIf="logoUploading" class="logo-status uploading">Uploading…</div>
+      <div *ngIf="logoSuccess" class="logo-status success">✓ Logo saved</div>
+    </div>
+
+    <!-- Name + meta -->
+    <div class="hero-info">
+      <div class="hero-avatar">{{ getInitials() }}</div>
+      <div class="hero-text">
+        <h1 class="hero-name">
+          {{ profile?.first_name }} {{ profile?.last_name }}
+        </h1>
+        <p class="hero-company">
+          {{ profile?.company_name || "No company name set" }}
+        </p>
+        <div class="hero-badges">
+          <span class="badge-role">{{ profile?.role | titlecase }}</span>
+          <span
+            class="badge-status"
+            [class.active]="profile?.status === 'active'"
+          >
+            {{ profile?.status === "active" ? "● Active" : "○ Pending" }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit / Save button top-right -->
+    <div class="hero-actions">
+      <button *ngIf="!editMode" class="btn-edit" (click)="startEdit()">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+          />
+        </svg>
+        Edit Profile
+      </button>
+      <div *ngIf="editMode" class="edit-action-row">
+        <button class="btn-cancel-edit" (click)="cancelEdit()">Cancel</button>
+        <button class="btn-save" (click)="saveProfile()" [disabled]="saving">
+          <span *ngIf="!saving">Save Changes</span>
+          <span *ngIf="saving" class="btn-spin"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Global alerts ─────────────────────────────────────── -->
+  <div class="alert alert-success" *ngIf="successMsg">
+    <svg viewBox="0 0 24 24">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+    </svg>
+    {{ successMsg }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMsg">
+    <svg viewBox="0 0 24 24">
+      <path
+        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+      />
+    </svg>
+    {{ errorMsg }}
+  </div>
+
+  <!-- ══ MAIN GRID ═════════════════════════════════════════════ -->
+  <div class="profile-grid">
+    <!-- ── PERSONAL INFO ─────────────────────────────────────── -->
+    <div class="info-card">
+      <div class="card-head">
+        <div class="card-icon orange">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+            />
+          </svg>
+        </div>
+        <h3>Personal Info</h3>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label>First Name</label>
+          <div class="inp-wrap" *ngIf="!editMode">
+            <span class="inp-view">{{ profile?.first_name || "—" }}</span>
+          </div>
+          <div class="inp-wrap active-border" *ngIf="editMode">
+            <input
+              type="text"
+              [(ngModel)]="form.first_name"
+              placeholder="First name"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Last Name</label>
+          <div class="inp-wrap" *ngIf="!editMode">
+            <span class="inp-view">{{ profile?.last_name || "—" }}</span>
+          </div>
+          <div class="inp-wrap active-border" *ngIf="editMode">
+            <input
+              type="text"
+              [(ngModel)]="form.last_name"
+              placeholder="Last name"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Mobile</label>
+          <div class="inp-wrap" *ngIf="!editMode">
+            <span class="inp-view">{{ profile?.mobile || "—" }}</span>
+          </div>
+          <div class="inp-wrap active-border" *ngIf="editMode">
+            <input
+              type="text"
+              [(ngModel)]="form.mobile"
+              placeholder="10-digit mobile"
+              maxlength="10"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email <span class="locked-tag">Cannot change</span></label>
+          <div class="inp-wrap locked">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+              />
+            </svg>
+            <span class="inp-view">{{ profile?.email }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUSINESS INFO ─────────────────────────────────────── -->
+    <div class="info-card">
+      <div class="card-head">
+        <div class="card-icon orange">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"
+            />
+          </svg>
+        </div>
+        <h3>Business Info</h3>
+      </div>
+
+      <div class="field-grid">
+        <div class="field full-width">
+          <label>Company Name</label>
+          <div class="inp-wrap" *ngIf="!editMode">
+            <span class="inp-view">{{ profile?.company_name || "—" }}</span>
+          </div>
+          <div class="inp-wrap active-border" *ngIf="editMode">
+            <input
+              type="text"
+              [(ngModel)]="form.company_name"
+              placeholder="My Company Pvt Ltd"
+            />
+          </div>
+        </div>
+
+        <div class="field full-width">
+          <label>GST Number</label>
+          <div class="inp-wrap" *ngIf="!editMode">
+            <span class="inp-view gst-val">{{
+              profile?.gst_number || "—"
+            }}</span>
+          </div>
+          <div class="inp-wrap active-border" *ngIf="editMode">
+            <input
+              type="text"
+              [(ngModel)]="form.gst_number"
+              placeholder="22AAAAA0000A1Z5"
+              style="text-transform: uppercase"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Account meta -->
+      <div class="meta-row">
+        <div class="meta-item">
+          <span class="meta-label">Member Since</span>
+          <span class="meta-val">{{
+            profile?.created_at | date: "dd MMM yyyy"
+          }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Account Role</span>
+          <span class="meta-val">{{ profile?.role | titlecase }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Status</span>
+          <span
+            class="meta-val status-val"
+            [class.active]="profile?.status === 'active'"
+          >
+            {{ profile?.status | titlecase }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHANGE PASSWORD ───────────────────────────────────── -->
+    <div class="info-card pwd-card">
+      <div class="card-head">
+        <div class="card-icon purple">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+            />
+          </svg>
+        </div>
+        <h3>Change Password</h3>
+      </div>
+
+      <div class="alert alert-success sm" *ngIf="pwdSuccess">
+        ✓ {{ pwdSuccess }}
+      </div>
+      <div class="alert alert-error sm" *ngIf="pwdError">{{ pwdError }}</div>
+
+      <div class="pwd-fields">
+        <div class="field">
+          <label>Current Password</label>
+          <div class="inp-wrap active-border">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+              />
+            </svg>
+            <input
+              [type]="showCurrent ? 'text' : 'password'"
+              [(ngModel)]="pwdForm.current"
+              placeholder="Enter current password"
+            />
+            <button
+              class="eye-btn"
+              (click)="showCurrent = !showCurrent"
+              tabindex="-1"
+            >
+              <svg viewBox="0 0 24 24" *ngIf="!showCurrent">
+                <path
+                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" *ngIf="showCurrent">
+                <path
+                  d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>New Password</label>
+          <div class="inp-wrap active-border">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+              />
+            </svg>
+            <input
+              [type]="showNew ? 'text' : 'password'"
+              [(ngModel)]="pwdForm.new"
+              placeholder="Min 6 characters"
+            />
+            <button class="eye-btn" (click)="showNew = !showNew" tabindex="-1">
+              <svg viewBox="0 0 24 24" *ngIf="!showNew">
+                <path
+                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" *ngIf="showNew">
+                <path
+                  d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-pwd" (click)="changePassword()" [disabled]="pwdSaving">
+        <svg viewBox="0 0 24 24" *ngIf="!pwdSaving">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+        <span *ngIf="!pwdSaving">Update Password</span>
+        <span *ngIf="pwdSaving" class="btn-spin"></span>
+      </button>
+    </div>
+  </div>
+  <!-- /profile-grid -->
+</div>

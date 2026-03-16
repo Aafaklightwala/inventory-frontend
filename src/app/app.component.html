@@ -29,8 +29,9 @@
       </button>
 
       <mat-menu #userMenu="matMenu" class="user-dropdown" xPosition="before">
+        <!-- User header -->
         <div class="menu-header" (click)="$event.stopPropagation()">
-          <div class="menu-avatar"><mat-icon>person</mat-icon></div>
+          <div class="menu-avatar">{{ userInitial }}</div>
           <div class="menu-user-info">
             <span class="menu-user-name">{{ userName || "My Account" }}</span>
             <span class="menu-user-role">{{
@@ -38,7 +39,23 @@
             }}</span>
           </div>
         </div>
+
         <div class="menu-divider"></div>
+
+        <!-- View Profile -->
+        <button mat-menu-item class="menu-item-profile" routerLink="/profile">
+          <div class="menu-item-icon profile-icon">
+            <mat-icon>manage_accounts</mat-icon>
+          </div>
+          <div class="menu-item-text">
+            <span class="menu-item-label">View Profile</span>
+            <span class="menu-item-sub">Edit details &amp; company info</span>
+          </div>
+        </button>
+
+        <div class="menu-divider"></div>
+
+        <!-- Logout -->
         <button mat-menu-item class="menu-item-logout" (click)="logout()">
           <div class="logout-chip"><mat-icon>logout</mat-icon></div>
           <span>Logout</span>
