@@ -28,6 +28,8 @@ import { environment } from '../../../environments/environment';
 export class DashboardComponent implements OnInit {
   stats: any = {};
   chart: any;
+  paymentChart: any;
+  stockChart: any;
 
   selectedFilter: string = '7days';
   startDate: string = '';
@@ -91,8 +93,11 @@ export class DashboardComponent implements OnInit {
     this.chart = new ApexCharts(document.querySelector('#salesChart'), options);
     this.chart.render();
   }
-
   renderStockChart(data: any) {
+    if (this.stockChart) {
+      this.stockChart.destroy();
+    }
+
     const options = {
       chart: { type: 'donut', height: 300 },
       series: [Number(data.inStock), Number(data.outOfStock)],
@@ -101,7 +106,12 @@ export class DashboardComponent implements OnInit {
       legend: { position: 'bottom' },
     };
 
-    new ApexCharts(document.querySelector('#stockChart'), options).render();
+    this.stockChart = new ApexCharts(
+      document.querySelector('#stockChart'),
+      options,
+    );
+
+    this.stockChart.render();
   }
 
   renderTopProducts(data: any[]) {
@@ -121,14 +131,32 @@ export class DashboardComponent implements OnInit {
   }
 
   renderPaymentChart(data: any) {
+    const cash = Number(data.cash);
+    const razorpay = Number(data.razorpay);
+
+    // ✅ destroy old chart before creating new
+    if (this.paymentChart) {
+      this.paymentChart.destroy();
+    }
+
     const options = {
       chart: { type: 'donut', height: 300 },
-      series: [Number(data.cash), Number(data.razorpay)],
-      labels: ['Cash', 'Razorpay'],
+      series: [cash, razorpay],
+      labels: [`Cash (₹${cash})`, `Razorpay (₹${razorpay})`],
       colors: ['#ff6b00', '#444'],
       legend: { position: 'bottom' },
+      tooltip: {
+        y: {
+          formatter: (val: number) => `₹ ${val}`,
+        },
+      },
     };
 
-    new ApexCharts(document.querySelector('#paymentChart'), options).render();
+    this.paymentChart = new ApexCharts(
+      document.querySelector('#paymentChart'),
+      options,
+    );
+
+    this.paymentChart.render();
   }
 }
