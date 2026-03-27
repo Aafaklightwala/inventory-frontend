@@ -88,6 +88,7 @@
   overflow: hidden;
 }
 
+/* picker-card gets flex: 3 so it dominates the column height */
 .picker-card {
   background: white;
   border-radius: 20px;
@@ -95,7 +96,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  flex: 1;
+  flex: 3; /* ← was flex: 1, now takes ~75% of left col */
   min-height: 0;
 }
 .picker-hdr {
@@ -329,7 +330,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   overflow: hidden;
   flex-shrink: 0;
-  max-height: 280px;
+  max-height: 340px;
   display: flex;
   flex-direction: column;
 }
@@ -337,7 +338,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 18px;
+  padding: 13px 18px;
   background: linear-gradient(135deg, #ff6b00, #ff8533);
   flex-shrink: 0;
 }
@@ -381,16 +382,19 @@
 }
 .cart-tbl thead tr {
   background: #f8f9fc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .cart-tbl th {
-  padding: 9px 14px;
-  font-size: 11px;
+  padding: 10px 16px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
-  color: #333;
+  letter-spacing: 1px;
+  color: #888;
   text-align: left;
-  border-bottom: 1.5px solid #f0f0f0;
+  border-bottom: 2px solid #f0f0f0;
 }
 .cart-tbl tbody tr {
   border-bottom: 1px solid #f5f5f5;
@@ -403,27 +407,29 @@
   background: #fff8f4;
 }
 .cart-tbl td {
-  padding: 10px 14px;
+  padding: 11px 16px;
   font-size: 14px;
   color: #111;
   font-weight: 500;
   vertical-align: middle;
 }
+
+/* Product name cell */
 .c-name {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 .c-av {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #fff3e6, #ffd9b3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: #ff6b00;
   border: 1.5px solid rgba(255, 107, 0, 0.15);
@@ -431,49 +437,65 @@
 .c-name span {
   font-weight: 700;
   color: #111;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.3;
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* Qty controls */
 .qty-ctrl {
   display: flex;
   align-items: center;
-  gap: 2px;
   background: #f3f4f6;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   width: fit-content;
+  border: 1.5px solid #ebebeb;
 }
 .qty-ctrl button {
   background: none;
   border: none;
   width: 30px;
-  height: 32px;
-  font-size: 18px;
+  height: 30px;
+  font-size: 17px;
   font-weight: 700;
   color: #ff6b00;
   cursor: pointer;
   transition: background 0.15s;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .qty-ctrl button:hover {
   background: #ffe8cc;
 }
 .qty-ctrl input {
-  width: 40px;
+  width: 38px;
   border: none;
-  background: none;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  background: white;
   text-align: center;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   color: #111;
   font-family: "Plus Jakarta Sans", sans-serif;
   outline: none;
+  height: 30px;
+  padding: 0;
 }
+
+/* Price input */
 .price-cell {
-  width: 80px;
+  width: 75px;
   padding: 6px 10px;
   border: 1.5px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #111;
   text-align: center;
@@ -487,17 +509,22 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
   background: white;
 }
+
+/* Total amount */
 .amt-cell {
   font-weight: 800;
   font-size: 14px;
   color: #111;
+  white-space: nowrap;
 }
+
+/* Delete button */
 .row-del {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   border: none;
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(239, 68, 68, 0.07);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -512,8 +539,8 @@
   fill: white;
 }
 .row-del svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   fill: #ef4444;
   transition: fill 0.2s;
 }
@@ -1382,4 +1409,244 @@
 }
 .btn-mark-paid.active svg {
   fill: white;
+}
+
+/* ══════════════════════════════════════════════
+   HOTKEY HUD — floating POS input display
+══════════════════════════════════════════════ */
+.hotkey-hud {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 10px 18px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Active typing state */
+.hotkey-hud.hud-active {
+  border-color: #ff6b00;
+  background: #fff8f4;
+  box-shadow:
+    0 0 0 3px rgba(255, 107, 0, 0.1),
+    0 4px 16px rgba(255, 107, 0, 0.12);
+}
+
+/* Success flash */
+.hotkey-hud.hud-success {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+  animation: hudPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Error flash */
+.hotkey-hud.hud-error {
+  border-color: #dc2626;
+  background: #fef2f2;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+  animation: hudShake 0.35s ease;
+}
+
+@keyframes hudPop {
+  from {
+    transform: scale(0.98);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes hudShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  60% {
+    transform: translateX(6px);
+  }
+}
+
+.hud-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.hud-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: #9ca3af;
+  transition: fill 0.2s;
+}
+.hud-active .hud-icon {
+  background: rgba(255, 107, 0, 0.1);
+}
+.hud-active .hud-icon svg {
+  fill: #ff6b00;
+}
+.hud-success .hud-icon {
+  background: rgba(22, 163, 74, 0.12);
+}
+.hud-success .hud-icon svg {
+  fill: #16a34a;
+}
+.hud-error .hud-icon {
+  background: rgba(220, 38, 38, 0.1);
+}
+.hud-error .hud-icon svg {
+  fill: #dc2626;
+}
+
+.hud-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hud-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #888;
+  margin-bottom: 4px;
+  transition: color 0.2s;
+}
+.hud-active .hud-label {
+  color: #ff6b00;
+}
+.hud-success .hud-label {
+  color: #16a34a;
+}
+.hud-error .hud-label {
+  color: #dc2626;
+}
+
+.hud-keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 28px;
+}
+
+.hud-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-bottom: 3px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+  font-family: "Courier New", monospace;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  animation: keyPop 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hud-success .hud-key {
+  border-color: #16a34a;
+  border-bottom-color: #15803d;
+  color: #16a34a;
+}
+.hud-error .hud-key {
+  border-color: #dc2626;
+  border-bottom-color: #b91c1c;
+  color: #dc2626;
+}
+
+@keyframes keyPop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.hud-cursor {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ff6b00;
+  animation: blink 0.8s infinite;
+  line-height: 1;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.hud-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: #aaa;
+  font-style: italic;
+}
+
+.hud-esc {
+  flex-shrink: 0;
+  background: #f3f4f6;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: "Courier New", monospace;
+}
+.hud-esc:hover {
+  background: #e5e7eb;
+  color: #111;
+}
+
+/* ══════════════════════════════════════════════
+   PRODUCT TILE — HOTKEY BADGE
+══════════════════════════════════════════════ */
+.pt-hotkey {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #fff3e6, #ffd9b3);
+  border: 1px solid rgba(255, 107, 0, 0.25);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #ff6b00;
+  font-family: "Courier New", monospace;
+  letter-spacing: 1px;
+  margin-top: 2px;
+  align-self: flex-start;
+}
+.pt-hotkey svg {
+  width: 10px;
+  height: 10px;
+  fill: #ff6b00;
+  flex-shrink: 0;
+}
+/* Highlight tile when its hotkey is being typed */
+.prod-tile.hotkey-match {
+  border-color: #ff6b00 !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2) !important;
+  transform: translateY(-4px) scale(1.02) !important;
 }

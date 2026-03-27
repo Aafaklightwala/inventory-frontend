@@ -14,9 +14,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ProductDialogComponent } from './product-dialog.component';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { MatSelectModule } from '@angular/material/select';
-import { CategoryFilterPipe } from './category-filter.pipe';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 
 @Component({
   selector: 'app-products',
@@ -34,9 +32,6 @@ import { environment } from '../../../environments/environment';
     FormsModule,
     MatSnackBarModule,
     ProductDialogComponent,
-    MatSelectModule,
-    MatFormFieldModule,
-    CategoryFilterPipe,
   ],
   templateUrl: './products.component.html',
   styleUrls: ['./products.component.css'],
@@ -47,6 +42,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = [
     'name',
     'sku',
+    'hotkey',
     'category',
     'price',
     'stock',
@@ -57,8 +53,6 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   // All unique categories extracted from products
   categories: string[] = [];
   selectedCategory: string = '';
-  isOpen = false;
-  categorySearch = '';
 
   // Keep the full unfiltered list for category re-filtering
   private allProducts: any[] = [];
@@ -216,16 +210,5 @@ export class ProductsComponent implements OnInit, AfterViewInit {
         );
         this.loadProducts();
       });
-  }
-
-  toggleDropdown() {
-    this.isOpen = !this.isOpen;
-  }
-
-  selectCategory(category: string) {
-    this.selectedCategory = category;
-    this.isOpen = false;
-    this.categorySearch = '';
-    this.applyCategoryFilter();
   }
 }

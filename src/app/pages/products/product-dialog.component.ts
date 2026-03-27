@@ -66,6 +66,28 @@ import { MatButtonModule } from '@angular/material/button';
           </div>
 
           <div class="field-group">
+            <label>
+              Hotkey
+              <span
+                style="background:linear-gradient(135deg,#ff6b00,#ff8533);color:white;font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;margin-left:6px;"
+                >POS</span
+              >
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 101, A1, TEA"
+              [(ngModel)]="product.hotkey"
+              class="field-input"
+              maxlength="20"
+              style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-family:monospace;"
+            />
+            <span class="field-hint"
+              >Type this code in billing screen to instantly add product to
+              cart</span
+            >
+          </div>
+
+          <div class="field-group">
             <label>Category</label>
             <!-- Input with datalist for autocomplete from existing categories -->
             <input
@@ -391,6 +413,7 @@ export class ProductDialogComponent {
   product: any = {
     name: '',
     sku: '',
+    hotkey: '',
     category: '',
     price: null,
     stock: 0,

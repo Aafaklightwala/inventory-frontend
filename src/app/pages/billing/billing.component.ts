@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -10,7 +10,7 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './billing.component.html',
   styleUrls: ['./billing.component.css'],
 })
-export class BillingComponent implements OnInit {
+export class BillingComponent implements OnInit, OnDestroy {
   /* ─── Products ─────────────────────────────── */
   products: any[] = [];
   filteredProducts: any[] = [];
@@ -28,19 +28,27 @@ export class BillingComponent implements OnInit {
   showCheckout = false;
   customerName = '';
   customerMobile = '';
-  discountAmount: number = 0;
-  discountApplied: number = 0;
-  paymentMode: string = 'cash';
-
-  /* ─── Proforma: optional mark as paid ──────── */
-  markAsPaid: boolean = false; // ← NEW: user can optionally mark proforma as paid
+  discountAmount = 0;
+  discountApplied = 0;
+  paymentMode = 'cash';
+  markAsPaid = false;
 
   /* ─── GST ───────────────────────────────────── */
   readonly GST_PERCENT = 5;
 
   /* ─── Bill meta ─────────────────────────────── */
-  billNumber: string = '';
-  invoiceId: number = 0;
+  billNumber = '';
+  invoiceId = 0;
+
+  /* ═══════════════════════════════════════════════════════════
+     POS HOTKEY SYSTEM
+  ══════════════════════════════════════════════════════════ */
+  typedKeys = '';
+  hotkeyActive = false;
+  hotkeyFlash: 'idle' | 'success' | 'error' = 'idle';
+  private typingTimer: any;
+  private flashTimer: any;
+  private readonly HOTKEY_TIMEOUT_MS = 2000; // reset after 2s inactivity
 
   constructor(private api: ApiService) {}
 
@@ -49,6 +57,131 @@ export class BillingComponent implements OnInit {
     this.loadProducts();
   }
 
+  ngOnDestroy(): void {
+    clearTimeout(this.typingTimer);
+    clearTimeout(this.flashTimer);
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     KEYBOARD LISTENER
+     • Alphanumeric keys build the buffer
+     • Enter  → confirm match immediately  ← KEY CHANGE
+     • Escape → clear buffer
+     • Auto-reset after HOTKEY_TIMEOUT_MS of inactivity (no match attempt)
+  ══════════════════════════════════════════════════════════ */
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    if (this.showCheckout) return;
+
+    const tag = (event.target as HTMLElement).tagName.toUpperCase();
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+
+    if (event.key === 'Escape') {
+      this.resetHotkey();
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      if (this.typedKeys) {
+        this.matchAndAdd();
+      }
+      return;
+    }
+
+    // Only alphanumeric + hyphen
+    if (/^[a-zA-Z0-9\-]$/.test(event.key)) {
+      event.preventDefault();
+      this.typedKeys += event.key.toUpperCase();
+      this.hotkeyActive = true;
+      this.hotkeyFlash = 'idle';
+
+      // ── REMOVED: tryInstantMatch() ──
+      // No longer auto-matching on keystroke.
+      // User MUST press Enter to confirm. This prevents hotkey "1"
+      // from firing when the user is still typing "100".
+
+      // Reset inactivity timer — just clears buffer, does NOT match
+      clearTimeout(this.typingTimer);
+      this.typingTimer = setTimeout(() => {
+        this.resetHotkey(); // silently clear, no match attempt
+      }, this.HOTKEY_TIMEOUT_MS);
+    }
+  }
+
+  /* Called ONLY on Enter — find exact match and add */
+  private matchAndAdd(): void {
+    const key = this.typedKeys.trim();
+    if (!key) {
+      this.resetHotkey();
+      return;
+    }
+
+    const product = this.products.find((p) => p.hotkey?.toUpperCase() === key);
+
+    if (product) {
+      this.addHotkeyProduct(product);
+    } else {
+      this.hotkeyFlash = 'error';
+      this.playBeep('error');
+      clearTimeout(this.flashTimer);
+      this.flashTimer = setTimeout(() => {
+        this.hotkeyFlash = 'idle';
+        this.resetHotkey();
+      }, 800);
+    }
+  }
+
+  /* Add product to cart via hotkey, show green flash */
+  private addHotkeyProduct(product: any): void {
+    if (product.stock <= 0) {
+      this.hotkeyFlash = 'error';
+      this.playBeep('error');
+      clearTimeout(this.flashTimer);
+      setTimeout(() => {
+        this.hotkeyFlash = 'idle';
+        this.resetHotkey();
+      }, 800);
+      return;
+    }
+
+    this.toggleProduct(product);
+    this.hotkeyFlash = 'success';
+    this.playBeep('success');
+
+    clearTimeout(this.flashTimer);
+    this.flashTimer = setTimeout(() => {
+      this.hotkeyFlash = 'idle';
+      this.resetHotkey();
+    }, 600);
+  }
+
+  resetHotkey(): void {
+    this.typedKeys = '';
+    this.hotkeyActive = false;
+    clearTimeout(this.typingTimer);
+  }
+
+  private playBeep(type: 'success' | 'error'): void {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = type === 'success' ? 880 : 220;
+      osc.type = type === 'success' ? 'sine' : 'square';
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.18);
+    } catch {
+      /* AudioContext not supported — silent fallback */
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     PRODUCTS
+  ══════════════════════════════════════════════════════════ */
   loadProducts() {
     this.api.getProducts().subscribe((res: any) => {
       this.products = res;
@@ -78,6 +211,9 @@ export class BillingComponent implements OnInit {
     });
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     CART
+  ══════════════════════════════════════════════════════════ */
   isInCart(productId: number): boolean {
     return this.selectedItems.some((i) => i.product_id === productId);
   }
@@ -87,7 +223,11 @@ export class BillingComponent implements OnInit {
       (i) => i.product_id === product.id,
     );
     if (idx >= 0) {
-      this.selectedItems.splice(idx, 1);
+      if (this.hotkeyActive) {
+        this.selectedItems[idx].qty += 1;
+      } else {
+        this.selectedItems.splice(idx, 1);
+      }
     } else {
       this.selectedItems.push({
         product_id: product.id,
@@ -122,6 +262,9 @@ export class BillingComponent implements OnInit {
     this.discountApplied = Math.min(d, this.subTotal + this.gstAmount);
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     CHECKOUT
+  ══════════════════════════════════════════════════════════ */
   openCheckout() {
     if (!this.selectedItems.length) return;
     this.showCheckout = true;
@@ -143,13 +286,13 @@ export class BillingComponent implements OnInit {
 
     const payload = {
       items: this.selectedItems,
-      payment_mode: this.paymentMode, // sent for both gst + proforma
+      payment_mode: this.paymentMode,
       customer_name: this.customerName || 'Walk-in Customer',
       customer_mobile: this.customerMobile || null,
       gst_percent: this.isProforma ? 0 : this.GST_PERCENT,
       discount: this.discountApplied,
       is_proforma: this.isProforma,
-      mark_as_paid: this.isProforma && this.markAsPaid, // ← for proforma mark-paid
+      mark_as_paid: this.isProforma && this.markAsPaid,
     };
 
     this.api.createInvoice(payload).subscribe({
@@ -181,9 +324,13 @@ export class BillingComponent implements OnInit {
     this.markAsPaid = false;
     this.invoiceId = 0;
     this.billNumber = 'B' + Date.now().toString().slice(-6);
+    this.resetHotkey();
     this.loadProducts();
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     COMPUTED TOTALS
+  ══════════════════════════════════════════════════════════ */
   get subTotal(): number {
     return this.selectedItems.reduce(
       (sum, item) => sum + (item.qty || 0) * (item.custom_price || 0),

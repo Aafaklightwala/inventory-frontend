@@ -44,44 +44,17 @@
       </div>
 
       <!-- Category Filter -->
-      <div class="category-dropdown" (clickOutside)="isOpen = false">
-        <!-- Trigger Button -->
-        <div class="dropdown-trigger" (click)="toggleDropdown()">
-          <span>
-            {{ selectedCategory || "All Categories" }}
-          </span>
-
-          <svg class="arrow" viewBox="0 0 24 24">
-            <path d="M7 10l5 5 5-5z" />
-          </svg>
-        </div>
-
-        <!-- Dropdown Panel -->
-        <div class="dropdown-panel" *ngIf="isOpen">
-          <!-- Search -->
-          <div class="dropdown-search">
-            <input
-              type="text"
-              placeholder="Search category..."
-              [(ngModel)]="categorySearch"
-            />
-          </div>
-
-          <!-- Options -->
-          <div class="dropdown-options">
-            <div class="dropdown-item" (click)="selectCategory('')">
-              All Categories
-            </div>
-
-            <div
-              class="dropdown-item"
-              *ngFor="let cat of categories | categoryFilter: categorySearch"
-              (click)="selectCategory(cat)"
-            >
-              {{ cat }}
-            </div>
-          </div>
-        </div>
+      <div class="category-filter-wrap">
+        <select
+          class="category-filter"
+          [(ngModel)]="selectedCategory"
+          (change)="applyCategoryFilter()"
+        >
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat">
+            {{ cat }}
+          </option>
+        </select>
       </div>
 
       <button class="add-btn" (click)="openAddDialog()">+ Add Product</button>
@@ -183,6 +156,25 @@
           <td mat-cell *matCellDef="let element">
             <span class="sku-chip" *ngIf="element.sku">{{ element.sku }}</span>
             <span class="no-sku" *ngIf="!element.sku">—</span>
+          </td>
+        </ng-container>
+
+        <!-- Hotkey Column -->
+        <ng-container matColumnDef="hotkey">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Hotkey</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="hotkey-chip" *ngIf="element.hotkey">
+              <svg
+                viewBox="0 0 24 24"
+                style="width: 10px; height: 10px; fill: #ff6b00; flex-shrink: 0"
+              >
+                <path
+                  d="M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 5H5v-2h2v2zm0-3H5v-2h2v2zm0-3H5V8h2v2zm9 6h-8v-2h8v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2zm3 6h-2v-2h2v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2z"
+                />
+              </svg>
+              {{ element.hotkey }}
+            </span>
+            <span class="no-sku" *ngIf="!element.hotkey">—</span>
           </td>
         </ng-container>
 

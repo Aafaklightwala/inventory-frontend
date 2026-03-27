@@ -1,4 +1,39 @@
 <div class="page-wrapper">
+  <!-- ═══ HOTKEY HUD ═══ -->
+  <div
+    class="hotkey-hud"
+    [class.hud-active]="hotkeyActive"
+    [class.hud-success]="hotkeyFlash === 'success'"
+    [class.hud-error]="hotkeyFlash === 'error'"
+  >
+    <div class="hud-icon">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 5H5v-2h2v2zm0-3H5v-2h2v2zm0-3H5V8h2v2zm9 6h-8v-2h8v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2zm3 6h-2v-2h2v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2z"
+        />
+      </svg>
+    </div>
+    <div class="hud-content">
+      <div class="hud-label">
+        <span *ngIf="hotkeyFlash === 'idle'">Hotkey Mode</span>
+        <span *ngIf="hotkeyFlash === 'success'">✓ Added to cart!</span>
+        <span *ngIf="hotkeyFlash === 'error'">✗ No product found</span>
+      </div>
+      <div class="hud-keys">
+        <span *ngFor="let ch of typedKeys.split('')" class="hud-key">{{
+          ch
+        }}</span>
+        <span class="hud-cursor" *ngIf="hotkeyActive && hotkeyFlash === 'idle'"
+          >_</span
+        >
+        <span class="hud-hint" *ngIf="!hotkeyActive"
+          >Type a product hotkey to add instantly</span
+        >
+      </div>
+    </div>
+    <div class="hud-esc" *ngIf="hotkeyActive" (click)="resetHotkey()">ESC</div>
+  </div>
+
   <!-- ═══ TOP BAR ═══ -->
   <div class="top-bar">
     <h2 class="page-title">Billing</h2>
@@ -100,6 +135,14 @@
             <div class="pt-bottom">
               <span class="pt-sku" *ngIf="p.sku">{{ p.sku }}</span>
               <span class="pt-price">₹{{ p.price }}</span>
+            </div>
+            <div class="pt-hotkey" *ngIf="p.hotkey">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 5H5v-2h2v2zm0-3H5v-2h2v2zm0-3H5V8h2v2zm9 6h-8v-2h8v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2zm3 6h-2v-2h2v2zm0-3h-2v-2h2v2zm0-3h-2V8h2v2z"
+                />
+              </svg>
+              {{ p.hotkey }}
             </div>
           </div>
           <div class="no-prod" *ngIf="filteredProducts.length === 0">
