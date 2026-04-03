@@ -152,6 +152,53 @@ import { MatButtonModule } from '@angular/material/button';
         </div>
       </div>
 
+      <!-- Section: Product Image -->
+      <div class="dialog-section">
+        <div class="section-label">Product Image</div>
+        <div
+          class="image-upload-area"
+          (click)="imageInput.click()"
+          [class.has-image]="product.image"
+        >
+          <input
+            #imageInput
+            type="file"
+            hidden
+            accept="image/*"
+            (change)="onImageSelect($event)"
+          />
+
+          <ng-container *ngIf="!product.image">
+            <div class="upload-placeholder">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+                />
+              </svg>
+              <span>Click to upload image</span>
+              <small>PNG, JPG, WEBP — max 500 KB</small>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="product.image">
+            <img
+              [src]="product.image"
+              alt="Product image"
+              class="image-preview"
+            />
+            <button
+              class="remove-image-btn"
+              (click)="removeImage($event)"
+              title="Remove image"
+            >
+              ✕
+            </button>
+          </ng-container>
+        </div>
+        <span class="field-hint" *ngIf="imageError" style="color:#ef4444">{{
+          imageError
+        }}</span>
+      </div>
       <!-- Actions -->
       <div class="dialog-actions">
         <button class="cancel-btn" (click)="dialogRef.close()">Cancel</button>
@@ -406,10 +453,82 @@ import { MatButtonModule } from '@angular/material/button';
         transform: none;
         cursor: not-allowed;
       }
+      /* ─── Image Upload ────────────────────────────── */
+      .image-upload-area {
+        position: relative;
+        border: 2px dashed #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fafafa;
+        min-height: 110px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .image-upload-area:hover,
+      .image-upload-area.has-image {
+        border-color: #ff6b00;
+        background: #fff8f3;
+      }
+
+      .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: #9ca3af;
+      }
+
+      .upload-placeholder svg {
+        width: 36px;
+        height: 36px;
+        fill: #d1d5db;
+      }
+
+      .upload-placeholder span {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+      }
+
+      .upload-placeholder small {
+        font-size: 11px;
+        color: #9ca3af;
+      }
+
+      .image-preview {
+        max-height: 120px;
+        max-width: 100%;
+        border-radius: 8px;
+        object-fit: contain;
+      }
+
+      .remove-image-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(220, 38, 38, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
     `,
   ],
 })
 export class ProductDialogComponent {
+  imageError = '';
   product: any = {
     name: '',
     sku: '',
@@ -428,7 +547,27 @@ export class ProductDialogComponent {
       this.product = { ...data.product };
     }
   }
+  onImageSelect(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
 
+    if (file.size > 500 * 1024) {
+      this.imageError = 'Image too large. Max 500 KB.';
+      return;
+    }
+
+    this.imageError = '';
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.product.image = e.target.result; // base64 data URL
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(event: Event) {
+    event.stopPropagation();
+    this.product.image = null;
+  }
   save() {
     if (!this.product.name?.trim() || !this.product.price) return;
     this.dialogRef.close(this.product);
