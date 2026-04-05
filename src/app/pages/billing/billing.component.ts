@@ -35,7 +35,11 @@ export class BillingComponent implements OnInit, OnDestroy {
 
   /* ─── GST ───────────────────────────────────── */
   readonly GST_PERCENT = 5;
-
+  rewardStatus: any = null;
+  rewardCheckTimer: any = null;
+  showRewardPopup = false;
+  rewardMessage = '';
+  freeItemApplied = false;
   /* ─── Bill meta ─────────────────────────────── */
   billNumber = '';
   invoiceId = 0;
@@ -293,19 +297,31 @@ export class BillingComponent implements OnInit, OnDestroy {
       discount: this.discountApplied,
       is_proforma: this.isProforma,
       mark_as_paid: this.isProforma && this.markAsPaid,
+      reward_applied: this.freeItemApplied,
     };
 
     this.api.createInvoice(payload).subscribe({
       next: (res: any) => {
         this.invoiceId = res.invoice_id;
-        const tag = this.isProforma ? 'Proforma Invoice' : 'Invoice';
-        const paidMsg =
-          this.isProforma && this.markAsPaid ? ' · Marked as Paid' : '';
-        alert(
-          `✅ ${tag} #${res.invoice_number} created!\nTotal: ₹${res.final_total}${paidMsg}`,
-        );
-        this.showCheckout = false;
-        this.resetBill();
+
+        // ── REWARD POPUP ──
+        if (res.reward_eligible) {
+          this.showRewardPopup = true;
+          this.rewardMessage = `🎉 ${this.customerName || 'Customer'} has visited 5 times! They earn a FREE item on this visit.`;
+        } else {
+          const tag = this.isProforma ? 'Proforma Invoice' : 'Invoice';
+          const paidMsg =
+            this.isProforma && this.markAsPaid ? ' · Marked as Paid' : '';
+          const rewardMsg =
+            res.visits_until_reward > 0
+              ? `\n⭐ ${res.visits_until_reward} more visit${res.visits_until_reward > 1 ? 's' : ''} until FREE item!`
+              : '';
+          alert(
+            `✅ ${tag} #${res.invoice_number} created!\nTotal: ₹${res.final_total}${paidMsg}${rewardMsg}`,
+          );
+          this.showCheckout = false;
+          this.resetBill();
+        }
       },
       error: (err: any) => {
         alert('❌ ' + (err.error?.message || 'Something went wrong'));
@@ -344,5 +360,47 @@ export class BillingComponent implements OnInit, OnDestroy {
 
   get finalTotal(): number {
     return this.subTotal + this.gstAmount - (this.discountApplied || 0);
+  }
+  onMobileInput() {
+    clearTimeout(this.rewardCheckTimer);
+    if (this.customerMobile?.length === 10) {
+      this.rewardCheckTimer = setTimeout(() => {
+        this.api
+          .checkRewardStatus(this.customerMobile)
+          .subscribe((status: any) => {
+            this.rewardStatus = status;
+          });
+      }, 500);
+    } else {
+      this.rewardStatus = null;
+    }
+  }
+
+  applyFreeItem() {
+    // Add the highest-priced item from cart as free, or a generic reward
+    const highestPricedItem = [...this.selectedItems].sort(
+      (a, b) => b.custom_price - a.custom_price,
+    )[0];
+
+    if (highestPricedItem) {
+      this.selectedItems.push({
+        product_id: highestPricedItem.product_id,
+        name: `🎁 FREE: ${highestPricedItem.name}`,
+        qty: 1,
+        grams: highestPricedItem.grams,
+        custom_price: 0,
+      });
+    }
+
+    this.freeItemApplied = true;
+    this.showRewardPopup = false;
+    this.showCheckout = false;
+    this.resetBill();
+  }
+
+  skipFreeItem() {
+    this.showRewardPopup = false;
+    this.showCheckout = false;
+    this.resetBill();
   }
 }

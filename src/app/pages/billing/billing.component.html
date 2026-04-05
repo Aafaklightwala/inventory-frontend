@@ -386,12 +386,82 @@
           </div>
           <div class="mf-grp">
             <label>Mobile Number</label>
+            <!-- ★ CHANGE 1: added (input)="onMobileInput()" -->
             <input
               type="text"
               placeholder="10-digit number"
               [(ngModel)]="customerMobile"
               maxlength="10"
+              (input)="onMobileInput()"
             />
+            <!-- ★ CHANGE 2: reward status bar below mobile field -->
+            <div
+              class="reward-status-bar"
+              *ngIf="rewardStatus && customerMobile?.length === 10"
+            >
+              <div
+                class="rsb-inner"
+                [class.rsb-close]="rewardStatus.visits_until_reward <= 1"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  />
+                </svg>
+                <span *ngIf="rewardStatus.visits_until_reward > 0">
+                  ⭐ {{ rewardStatus.visits_until_reward }} more visit{{
+                    rewardStatus.visits_until_reward > 1 ? "s" : ""
+                  }}
+                  for FREE item
+                </span>
+                <span
+                  *ngIf="
+                    rewardStatus.visits_until_reward === 0 && rewardStatus.found
+                  "
+                >
+                  🎉 Reward available this visit!
+                </span>
+                <span *ngIf="!rewardStatus.found">
+                  🆕 New customer — visit 1 of 5
+                </span>
+                <!-- Progress dots -->
+                <div class="reward-dots">
+                  <span
+                    class="rd"
+                    [class.rd-filled]="
+                      rewardStatus.found &&
+                      5 - rewardStatus.visits_until_reward >= 1
+                    "
+                    >●</span
+                  >
+                  <span
+                    class="rd"
+                    [class.rd-filled]="
+                      rewardStatus.found &&
+                      5 - rewardStatus.visits_until_reward >= 2
+                    "
+                    >●</span
+                  >
+                  <span
+                    class="rd"
+                    [class.rd-filled]="
+                      rewardStatus.found &&
+                      5 - rewardStatus.visits_until_reward >= 3
+                    "
+                    >●</span
+                  >
+                  <span
+                    class="rd"
+                    [class.rd-filled]="
+                      rewardStatus.found &&
+                      5 - rewardStatus.visits_until_reward >= 4
+                    "
+                    >●</span
+                  >
+                  <span class="rd rd-star">★</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -411,7 +481,7 @@
             </div>
           </div>
 
-          <!-- ── PAYMENT MODE — shown for BOTH gst and proforma ── -->
+          <!-- ── PAYMENT MODE ── -->
           <div class="mf-grp">
             <label>Payment Mode</label>
             <div class="pay-row">
@@ -448,7 +518,7 @@
         </div>
       </div>
 
-      <!-- QR for razorpay (both gst and proforma) -->
+      <!-- QR for razorpay -->
       <div class="qr-area" *ngIf="paymentMode === 'razorpay'">
         <div class="qr-box">
           <img src="assets/razorpay-qr.png" alt="Scan to Pay" />
@@ -521,6 +591,27 @@
                 ? "Mark as Paid"
                 : "Confirm Payment"
           }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★ CHANGE 3: REWARD POPUP MODAL — just before closing </div> of page-wrapper -->
+  <div class="overlay" *ngIf="showRewardPopup">
+    <div class="reward-modal">
+      <div class="rm-confetti">🎊</div>
+      <div class="rm-icon">⭐</div>
+      <h3 class="rm-title">Reward Unlocked!</h3>
+      <p class="rm-sub">{{ rewardMessage }}</p>
+      <p class="rm-hint">
+        The most expensive item in their cart can be given FREE as a reward.
+      </p>
+      <div class="rm-actions">
+        <button class="rm-btn-skip" (click)="skipFreeItem()">
+          Skip This Time
+        </button>
+        <button class="rm-btn-apply" (click)="applyFreeItem()">
+          🎁 Apply Free Item
         </button>
       </div>
     </div>
