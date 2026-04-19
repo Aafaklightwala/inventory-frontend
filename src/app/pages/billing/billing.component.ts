@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  HostListener,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -40,9 +47,126 @@ export class BillingComponent implements OnInit, OnDestroy {
   showRewardPopup = false;
   rewardMessage = '';
   freeItemApplied = false;
+
   /* ─── Bill meta ─────────────────────────────── */
   billNumber = '';
   invoiceId = 0;
+
+  /* ═══════════════════════════════════════════════════════════
+     BARCODE SCANNER
+  ══════════════════════════════════════════════════════════ */
+  scannerOpen = false;
+  scannerStatus: 'idle' | 'scanning' | 'success' | 'error' | 'notfound' =
+    'idle';
+  scannerMessage = '';
+  private codeReader: any = null;
+  private scannerStream: MediaStream | null = null;
+
+  @ViewChild('scannerVideo') scannerVideoRef!: ElementRef<HTMLVideoElement>;
+
+  async openScanner() {
+    this.scannerOpen = true;
+    this.scannerStatus = 'scanning';
+    this.scannerMessage = 'Point camera at a barcode...';
+    // Wait for view to render the video element
+    setTimeout(() => this.startScan(), 300);
+  }
+
+  private async startScan() {
+    try {
+      // Dynamically import @zxing/browser
+      const { BrowserMultiFormatReader } = await import(
+        '@zxing/browser' as any
+      );
+      this.codeReader = new BrowserMultiFormatReader();
+
+      const videoEl = this.scannerVideoRef?.nativeElement;
+      if (!videoEl) {
+        this.scannerMessage = 'Camera element not found.';
+        this.scannerStatus = 'error';
+        return;
+      }
+
+      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+      if (!devices.length) {
+        this.scannerMessage = 'No camera found on this device.';
+        this.scannerStatus = 'error';
+        return;
+      }
+
+      // Prefer back camera on mobile
+      const backCam = devices.find(
+        (d: any) =>
+          d.label.toLowerCase().includes('back') ||
+          d.label.toLowerCase().includes('rear'),
+      );
+      const deviceId = backCam ? backCam.deviceId : devices[0].deviceId;
+
+      this.codeReader.decodeFromVideoDevice(
+        deviceId,
+        videoEl,
+        (result: any, err: any) => {
+          if (result) {
+            const barcode = result.getText();
+            this.onBarcodeScanned(barcode);
+          }
+        },
+      );
+    } catch (err: any) {
+      if (err?.name === 'NotAllowedError') {
+        this.scannerMessage =
+          'Camera permission denied. Please allow camera access.';
+      } else {
+        this.scannerMessage =
+          'Could not start camera. Try installing @zxing/browser.';
+      }
+      this.scannerStatus = 'error';
+    }
+  }
+
+  onBarcodeScanned(code: string) {
+    this.stopScanner();
+
+    const product = this.products.find(
+      (p) => p.barcode === code || p.sku === code,
+    );
+
+    if (product) {
+      if (product.stock <= 0) {
+        this.scannerStatus = 'error';
+        this.scannerMessage = `"${product.name}" is out of stock!`;
+        this.playBeep('error');
+      } else {
+        this.toggleProduct(product);
+        this.scannerStatus = 'success';
+        this.scannerMessage = `✓ "${product.name}" added to cart!`;
+        this.playBeep('success');
+      }
+    } else {
+      this.scannerStatus = 'notfound';
+      this.scannerMessage = `No product found for barcode: ${code}`;
+      this.playBeep('error');
+    }
+
+    // Auto-close after 2s
+    setTimeout(() => this.closeScanner(), 2000);
+  }
+
+  stopScanner() {
+    if (this.codeReader) {
+      try {
+        this.codeReader.reset();
+      } catch {}
+      this.codeReader = null;
+    }
+  }
+
+  closeScanner() {
+    this.stopScanner();
+    this.scannerOpen = false;
+    this.scannerStatus = 'idle';
+    this.scannerMessage = '';
+  }
 
   /* ═══════════════════════════════════════════════════════════
      POS HOTKEY SYSTEM
@@ -52,7 +176,7 @@ export class BillingComponent implements OnInit, OnDestroy {
   hotkeyFlash: 'idle' | 'success' | 'error' = 'idle';
   private typingTimer: any;
   private flashTimer: any;
-  private readonly HOTKEY_TIMEOUT_MS = 2000; // reset after 2s inactivity
+  private readonly HOTKEY_TIMEOUT_MS = 2000;
 
   constructor(private api: ApiService) {}
 
@@ -64,18 +188,12 @@ export class BillingComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     clearTimeout(this.typingTimer);
     clearTimeout(this.flashTimer);
+    this.stopScanner();
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     KEYBOARD LISTENER
-     • Alphanumeric keys build the buffer
-     • Enter  → confirm match immediately  ← KEY CHANGE
-     • Escape → clear buffer
-     • Auto-reset after HOTKEY_TIMEOUT_MS of inactivity (no match attempt)
-  ══════════════════════════════════════════════════════════ */
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
-    if (this.showCheckout) return;
+    if (this.showCheckout || this.scannerOpen) return;
 
     const tag = (event.target as HTMLElement).tagName.toUpperCase();
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
@@ -92,27 +210,19 @@ export class BillingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Only alphanumeric + hyphen
     if (/^[a-zA-Z0-9\-]$/.test(event.key)) {
       event.preventDefault();
       this.typedKeys += event.key.toUpperCase();
       this.hotkeyActive = true;
       this.hotkeyFlash = 'idle';
 
-      // ── REMOVED: tryInstantMatch() ──
-      // No longer auto-matching on keystroke.
-      // User MUST press Enter to confirm. This prevents hotkey "1"
-      // from firing when the user is still typing "100".
-
-      // Reset inactivity timer — just clears buffer, does NOT match
       clearTimeout(this.typingTimer);
       this.typingTimer = setTimeout(() => {
-        this.resetHotkey(); // silently clear, no match attempt
+        this.resetHotkey();
       }, this.HOTKEY_TIMEOUT_MS);
     }
   }
 
-  /* Called ONLY on Enter — find exact match and add */
   private matchAndAdd(): void {
     const key = this.typedKeys.trim();
     if (!key) {
@@ -135,7 +245,6 @@ export class BillingComponent implements OnInit, OnDestroy {
     }
   }
 
-  /* Add product to cart via hotkey, show green flash */
   private addHotkeyProduct(product: any): void {
     if (product.stock <= 0) {
       this.hotkeyFlash = 'error';
@@ -179,7 +288,7 @@ export class BillingComponent implements OnInit, OnDestroy {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.18);
     } catch {
-      /* AudioContext not supported — silent fallback */
+      /* silent fallback */
     }
   }
 
@@ -210,7 +319,8 @@ export class BillingComponent implements OnInit, OnDestroy {
       const matchSearch =
         !q ||
         p.name?.toLowerCase().includes(q) ||
-        p.sku?.toLowerCase().includes(q);
+        p.sku?.toLowerCase().includes(q) ||
+        p.barcode?.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
   }
@@ -304,7 +414,6 @@ export class BillingComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         this.invoiceId = res.invoice_id;
 
-        // ── REWARD POPUP ──
         if (res.reward_eligible) {
           this.showRewardPopup = true;
           this.rewardMessage = `🎉 ${this.customerName || 'Customer'} has visited 5 times! They earn a FREE item on this visit.`;
@@ -361,6 +470,7 @@ export class BillingComponent implements OnInit, OnDestroy {
   get finalTotal(): number {
     return this.subTotal + this.gstAmount - (this.discountApplied || 0);
   }
+
   onMobileInput() {
     clearTimeout(this.rewardCheckTimer);
     if (this.customerMobile?.length === 10) {
@@ -377,7 +487,6 @@ export class BillingComponent implements OnInit, OnDestroy {
   }
 
   applyFreeItem() {
-    // Add the highest-priced item from cart as free, or a generic reward
     const highestPricedItem = [...this.selectedItems].sort(
       (a, b) => b.custom_price - a.custom_price,
     )[0];

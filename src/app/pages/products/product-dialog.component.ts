@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -99,6 +99,76 @@ import { MatButtonModule } from '@angular/material/button';
               </option>
             </datalist>
             <span class="field-hint">Type a new one or pick existing</span>
+          </div>
+
+          <!-- Barcode Field -->
+          <div class="field-group full">
+            <label>
+              Barcode
+              <span
+                style="background:linear-gradient(135deg,#111,#333);color:white;font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;margin-left:6px;"
+                >SCANNER</span
+              >
+            </label>
+            <div class="barcode-input-wrap">
+              <svg viewBox="0 0 24 24" class="barcode-ico">
+                <path
+                  d="M1 5h2v14H1zm4 0h1v14H5zm2 0h2v14H7zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="e.g. 8901234567890 — or scan below"
+                [(ngModel)]="product.barcode"
+                class="field-input barcode-inp"
+                style="font-family:monospace;letter-spacing:1.5px;"
+              />
+              <button
+                class="scan-barcode-btn"
+                type="button"
+                (click)="openDialogScanner()"
+                title="Scan barcode with camera"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M20 5h-6v6h6V5zm-6 8h1.5v1.5H14V13zm1.5 1.5H17V16h-1.5v-1.5zM17 13h1.5v1.5H17V13zm-3 3h1.5v1.5H14V16zm1.5 1.5H17V19h-1.5v-1.5zM17 16h1.5v1.5H17V16zm1.5-1.5H20V16h-1.5v-1.5zm0 3H20V19h-1.5v-1.5z"
+                  />
+                </svg>
+                Scan
+              </button>
+            </div>
+            <span class="field-hint"
+              >Barcode used for camera/gun scanner auto-add in billing</span
+            >
+          </div>
+
+          <!-- Inline mini scanner for dialog -->
+          <div class="field-group full" *ngIf="dialogScannerOpen">
+            <div class="dialog-scanner-box">
+              <div class="dsb-header">
+                <span>📷 Camera Scanner</span>
+                <button class="dsb-close" (click)="closeDialogScanner()">
+                  ✕
+                </button>
+              </div>
+              <video
+                #dialogVideo
+                class="dsb-video"
+                autoplay
+                playsinline
+                muted
+              ></video>
+              <div class="dsb-line"></div>
+              <div
+                class="dsb-status"
+                [ngClass]="{
+                  'dsb-ok': dialogScanStatus === 'success',
+                  'dsb-err': dialogScanStatus === 'error',
+                }"
+              >
+                {{ dialogScanMessage }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -758,16 +828,227 @@ import { MatButtonModule } from '@angular/material/button';
         transform: none;
         cursor: not-allowed;
       }
+
+      /* ─── Barcode Field ─── */
+      .barcode-input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 4px 4px 4px 12px;
+        background: #fafafa;
+        transition: border-color 0.2s;
+      }
+      .barcode-input-wrap:focus-within {
+        border-color: #111;
+        background: white;
+      }
+      .barcode-ico {
+        width: 18px;
+        height: 18px;
+        fill: #9ca3af;
+        flex-shrink: 0;
+      }
+      .barcode-inp {
+        flex: 1;
+        border: none !important;
+        background: transparent !important;
+        padding: 8px 0 !important;
+        outline: none !important;
+        font-size: 13px;
+      }
+      .scan-barcode-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #111, #333);
+        color: white;
+        border: none;
+        border-radius: 9px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .scan-barcode-btn:hover {
+        background: linear-gradient(135deg, #ff6b00, #ff8533);
+        box-shadow: 0 3px 10px rgba(255, 107, 0, 0.4);
+      }
+      .scan-barcode-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+      }
+
+      /* ─── Dialog Scanner Box ─── */
+      .dialog-scanner-box {
+        background: #0f0f0f;
+        border-radius: 16px;
+        padding: 16px;
+        border: 1.5px solid rgba(255, 255, 255, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+      .dsb-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: white;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .dsb-close {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .dsb-video {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+        display: block;
+        background: #000;
+      }
+      .dsb-line {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #ff6b00, transparent);
+        animation: scanDown2 2s linear infinite;
+        top: 50px;
+      }
+      @keyframes scanDown2 {
+        0% {
+          top: 45px;
+        }
+        50% {
+          top: 195px;
+        }
+        100% {
+          top: 45px;
+        }
+      }
+      .dsb-status {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        text-align: center;
+        margin-top: 10px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .dsb-ok {
+        color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+      }
+      .dsb-err {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+      }
     `,
   ],
 })
 export class ProductDialogComponent {
   imageError = '';
 
+  /* ─── Dialog inline scanner ─── */
+  dialogScannerOpen = false;
+  dialogScanStatus: 'idle' | 'scanning' | 'success' | 'error' = 'idle';
+  dialogScanMessage = 'Point camera at barcode...';
+  private dialogCodeReader: any = null;
+
+  @ViewChild('dialogVideo') dialogVideoRef!: any;
+
+  async openDialogScanner() {
+    this.dialogScannerOpen = true;
+    this.dialogScanStatus = 'scanning';
+    this.dialogScanMessage = 'Point camera at barcode...';
+    setTimeout(() => this.startDialogScan(), 300);
+  }
+
+  private async startDialogScan() {
+    try {
+      const { BrowserMultiFormatReader } = await import(
+        '@zxing/browser' as any
+      );
+      this.dialogCodeReader = new BrowserMultiFormatReader();
+      const videoEl = this.dialogVideoRef?.nativeElement;
+      if (!videoEl) {
+        this.dialogScanMessage = 'Camera not ready.';
+        return;
+      }
+
+      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+      if (!devices.length) {
+        this.dialogScanMessage = 'No camera found.';
+        this.dialogScanStatus = 'error';
+        return;
+      }
+      const backCam = devices.find(
+        (d: any) =>
+          d.label.toLowerCase().includes('back') ||
+          d.label.toLowerCase().includes('rear'),
+      );
+      const deviceId = backCam ? backCam.deviceId : devices[0].deviceId;
+
+      this.dialogCodeReader.decodeFromVideoDevice(
+        deviceId,
+        videoEl,
+        (result: any) => {
+          if (result) {
+            this.product.barcode = result.getText();
+            this.dialogScanStatus = 'success';
+            this.dialogScanMessage = `✓ Barcode captured: ${this.product.barcode}`;
+            this.stopDialogScanner();
+            setTimeout(() => this.closeDialogScanner(), 1500);
+          }
+        },
+      );
+    } catch (err: any) {
+      this.dialogScanMessage =
+        err?.name === 'NotAllowedError'
+          ? 'Camera permission denied.'
+          : 'Could not start camera.';
+      this.dialogScanStatus = 'error';
+    }
+  }
+
+  stopDialogScanner() {
+    if (this.dialogCodeReader) {
+      try {
+        this.dialogCodeReader.reset();
+      } catch {}
+      this.dialogCodeReader = null;
+    }
+  }
+
+  closeDialogScanner() {
+    this.stopDialogScanner();
+    this.dialogScannerOpen = false;
+    this.dialogScanStatus = 'idle';
+  }
+
   product: any = {
     name: '',
     sku: '',
     hotkey: '',
+    barcode: '',
     category: '',
     price: null,
     stock: 0,
@@ -783,6 +1064,7 @@ export class ProductDialogComponent {
     if (data?.product) {
       this.product = {
         ...data.product,
+        barcode: data.product.barcode || '',
         // Ensure ingredients is always an array
         ingredients: Array.isArray(data.product.ingredients)
           ? data.product.ingredients.filter(Boolean)

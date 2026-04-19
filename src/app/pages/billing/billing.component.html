@@ -40,7 +40,6 @@
     <div class="bill-meta">
       <span class="bill-no">Bill #{{ billNumber }}</span>
 
-      <!-- ── PROFORMA TOGGLE ── -->
       <label class="proforma-toggle" [class.active]="isProforma">
         <input
           type="checkbox"
@@ -71,32 +70,45 @@
           </div>
         </div>
 
-        <div class="search-wrap">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#111"
-            stroke-width="2.5"
-            stroke-linecap="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            #searchInput
-            type="text"
-            placeholder="Search by name or SKU…"
-            [(ngModel)]="searchQuery"
-            (input)="filterProducts()"
-            class="search-inp"
-            autocomplete="off"
-          />
-          <button
-            class="s-clear"
-            *ngIf="searchQuery"
-            (click)="searchQuery = ''; filterProducts()"
-          >
-            ✕
+        <!-- Search + Scan Row -->
+        <div class="search-scan-row">
+          <div class="search-wrap">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#111"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              #searchInput
+              type="text"
+              placeholder="Search by name, SKU or barcode…"
+              [(ngModel)]="searchQuery"
+              (input)="filterProducts()"
+              class="search-inp"
+              autocomplete="off"
+            />
+            <button
+              class="s-clear"
+              *ngIf="searchQuery"
+              (click)="searchQuery = ''; filterProducts()"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- SCAN BUTTON -->
+          <button class="scan-btn" (click)="openScanner()" title="Scan Barcode">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M1 5h2v14H1zm4 0h1v14H5zm2 0h2v14H7zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zM1 2C.4 2 0 2.4 0 3v18c0 .6.4 1 1 1h2V2H1zm22 0h-2v20h2c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1z"
+              />
+            </svg>
+            <span>Scan</span>
           </button>
         </div>
 
@@ -143,6 +155,14 @@
                 />
               </svg>
               {{ p.hotkey }}
+            </div>
+            <!-- Barcode indicator -->
+            <div class="pt-barcode" *ngIf="p.barcode">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M1 5h2v14H1zm4 0h1v14H5zm2 0h2v14H7zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zm2 0h2v14h-2z"
+                />
+              </svg>
             </div>
           </div>
           <div class="no-prod" *ngIf="filteredProducts.length === 0">
@@ -320,7 +340,6 @@
         </svg>
       </button>
 
-      <!-- Proforma info banner -->
       <div class="proforma-alert" *ngIf="isProforma">
         <svg viewBox="0 0 24 24">
           <path
@@ -373,7 +392,6 @@
         </div>
       </div>
 
-      <!-- ── FIELDS ── -->
       <div class="m-fields">
         <div class="mf-row">
           <div class="mf-grp">
@@ -386,7 +404,6 @@
           </div>
           <div class="mf-grp">
             <label>Mobile Number</label>
-            <!-- ★ CHANGE 1: added (input)="onMobileInput()" -->
             <input
               type="text"
               placeholder="10-digit number"
@@ -394,7 +411,6 @@
               maxlength="10"
               (input)="onMobileInput()"
             />
-            <!-- ★ CHANGE 2: reward status bar below mobile field -->
             <div
               class="reward-status-bar"
               *ngIf="rewardStatus && customerMobile?.length === 10"
@@ -408,23 +424,21 @@
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                   />
                 </svg>
-                <span *ngIf="rewardStatus.visits_until_reward > 0">
-                  ⭐ {{ rewardStatus.visits_until_reward }} more visit{{
+                <span *ngIf="rewardStatus.visits_until_reward > 0"
+                  >⭐ {{ rewardStatus.visits_until_reward }} more visit{{
                     rewardStatus.visits_until_reward > 1 ? "s" : ""
                   }}
-                  for FREE item
-                </span>
+                  for FREE item</span
+                >
                 <span
                   *ngIf="
                     rewardStatus.visits_until_reward === 0 && rewardStatus.found
                   "
+                  >🎉 Reward available this visit!</span
                 >
-                  🎉 Reward available this visit!
-                </span>
-                <span *ngIf="!rewardStatus.found">
-                  🆕 New customer — visit 1 of 5
-                </span>
-                <!-- Progress dots -->
+                <span *ngIf="!rewardStatus.found"
+                  >🆕 New customer — visit 1 of 5</span
+                >
                 <div class="reward-dots">
                   <span
                     class="rd"
@@ -481,7 +495,6 @@
             </div>
           </div>
 
-          <!-- ── PAYMENT MODE ── -->
           <div class="mf-grp">
             <label>Payment Mode</label>
             <div class="pay-row">
@@ -518,7 +531,6 @@
         </div>
       </div>
 
-      <!-- QR for razorpay -->
       <div class="qr-area" *ngIf="paymentMode === 'razorpay'">
         <div class="qr-box">
           <img src="assets/razorpay-qr.png" alt="Scan to Pay" />
@@ -528,7 +540,6 @@
         </p>
       </div>
 
-      <!-- ── PROFORMA: payment pending notice + Mark as Paid button ── -->
       <div class="proforma-pay-notice" *ngIf="isProforma">
         <div class="ppn-left">
           <svg viewBox="0 0 24 24">
@@ -555,7 +566,6 @@
         </button>
       </div>
 
-      <!-- ── ACTIONS ── -->
       <div class="m-actions">
         <button class="btn-cancel-bill" (click)="cancelAndClose()">
           <svg viewBox="0 0 24 24">
@@ -596,7 +606,119 @@
     </div>
   </div>
 
-  <!-- ★ CHANGE 3: REWARD POPUP MODAL — just before closing </div> of page-wrapper -->
+  <!-- ═══════════════════════════════════════════
+       BARCODE SCANNER OVERLAY
+  ═══════════════════════════════════════════ -->
+  <div class="scanner-overlay" *ngIf="scannerOpen">
+    <div class="scanner-modal">
+      <button class="scanner-close" (click)="closeScanner()">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+          />
+        </svg>
+      </button>
+
+      <div class="scanner-header">
+        <div class="scanner-icon">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M1 5h2v14H1zm4 0h1v14H5zm2 0h2v14H7zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zM1 2C.4 2 0 2.4 0 3v18c0 .6.4 1 1 1h2V2H1zm22 0h-2v20h2c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3 class="scanner-title">Barcode Scanner</h3>
+          <p class="scanner-subtitle">Point camera at barcode to add product</p>
+        </div>
+      </div>
+
+      <!-- Video Feed -->
+      <div
+        class="scanner-viewport"
+        [class.scan-success]="scannerStatus === 'success'"
+        [class.scan-error]="
+          scannerStatus === 'error' || scannerStatus === 'notfound'
+        "
+      >
+        <video
+          #scannerVideo
+          class="scanner-video"
+          autoplay
+          playsinline
+          muted
+        ></video>
+        <!-- Scan line animation -->
+        <div class="scan-line" *ngIf="scannerStatus === 'scanning'"></div>
+        <!-- Corner brackets -->
+        <div class="scan-corner tl"></div>
+        <div class="scan-corner tr"></div>
+        <div class="scan-corner bl"></div>
+        <div class="scan-corner br"></div>
+      </div>
+
+      <!-- Status message -->
+      <div
+        class="scanner-status"
+        [ngClass]="{
+          'status-scanning': scannerStatus === 'scanning',
+          'status-success': scannerStatus === 'success',
+          'status-error':
+            scannerStatus === 'error' || scannerStatus === 'notfound',
+        }"
+      >
+        <svg viewBox="0 0 24 24" *ngIf="scannerStatus === 'scanning'">
+          <path
+            d="M1 5h2v14H1zm4 0h1v14H5zm2 0h2v14H7zm3 0h1v14h-1zm2 0h2v14h-2zm3 0h1v14h-1zm2 0h2v14h-2z"
+          />
+        </svg>
+        <svg viewBox="0 0 24 24" *ngIf="scannerStatus === 'success'">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+        <svg
+          viewBox="0 0 24 24"
+          *ngIf="scannerStatus === 'error' || scannerStatus === 'notfound'"
+        >
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+          />
+        </svg>
+        <span>{{ scannerMessage }}</span>
+      </div>
+
+      <!-- Manual barcode entry fallback -->
+      <div class="scanner-manual">
+        <span class="manual-label">Or enter barcode manually</span>
+        <div class="manual-input-row">
+          <input
+            type="text"
+            placeholder="Type barcode / SKU and press Enter"
+            class="manual-inp"
+            #manualInput
+            (keydown.enter)="
+              onBarcodeScanned(manualInput.value); manualInput.value = ''
+            "
+          />
+          <button
+            class="manual-btn"
+            (click)="
+              onBarcodeScanned(manualInput.value); manualInput.value = ''
+            "
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+          </button>
+        </div>
+        <span class="manual-hint"
+          >💡 Tip: If using a USB barcode gun, it types automatically — no
+          camera needed!</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ REWARD POPUP MODAL ═══ -->
   <div class="overlay" *ngIf="showRewardPopup">
     <div class="reward-modal">
       <div class="rm-confetti">🎊</div>
