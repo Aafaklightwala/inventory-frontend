@@ -1,3 +1,4 @@
+<!-- invoices.component.html — updated with source column + ship/complete buttons -->
 <h2 class="title">Invoices</h2>
 
 <div class="invoice-toolbar">
@@ -20,7 +21,6 @@
       (keyup)="applyFilter($event)"
     />
   </div>
-
   <div class="date-filter">
     <input type="date" [(ngModel)]="startDate" />
     <input type="date" [(ngModel)]="endDate" />
@@ -37,7 +37,7 @@
         <td mat-cell *matCellDef="let element">{{ element.id }}</td>
       </ng-container>
 
-      <!-- Invoice Number + Proforma tag -->
+      <!-- Invoice Number -->
       <ng-container matColumnDef="invoice_number">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Invoice</th>
         <td mat-cell *matCellDef="let element">
@@ -65,6 +65,20 @@
         </td>
       </ng-container>
 
+      <!-- ── NEW: Source column (POS vs Website) ───────── -->
+      <ng-container matColumnDef="source">
+        <th mat-header-cell *matHeaderCellDef>Source</th>
+        <td mat-cell *matCellDef="let element">
+          <span
+            class="source-tag"
+            [class.website]="element.source === 'website'"
+            [class.pos]="element.source !== 'website'"
+          >
+            {{ element.source === "website" ? "🌐 Website" : "🏪 POS" }}
+          </span>
+        </td>
+      </ng-container>
+
       <!-- Total -->
       <ng-container matColumnDef="total">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
@@ -75,9 +89,9 @@
         </td>
       </ng-container>
 
-      <!-- Status -->
+      <!-- Payment Status -->
       <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <th mat-header-cell *matHeaderCellDef>Payment</th>
         <td mat-cell *matCellDef="let element">
           <span
             class="badge"
@@ -92,24 +106,56 @@
         </td>
       </ng-container>
 
+      <!-- ── NEW: Order Status column (for website orders) ── -->
+      <ng-container matColumnDef="order_status">
+        <th mat-header-cell *matHeaderCellDef>Order Status</th>
+        <td mat-cell *matCellDef="let element">
+          <!-- Only show for website orders -->
+          <div
+            class="order-status-cell"
+            *ngIf="element.source === 'website'; else naCell"
+          >
+            <span
+              class="order-status-badge"
+              [ngClass]="getOrderStatusClass(element.order_status)"
+            >
+              {{ element.order_status | titlecase }}
+            </span>
+            <!-- Ship button: show if not yet shipped -->
+            <button
+              class="os-btn ship"
+              *ngIf="
+                element.order_status === 'pending' ||
+                element.order_status === 'processing'
+              "
+              (click)="updateOrderStatus(element, 'shipped')"
+              [disabled]="updatingStatusId === element.id"
+              title="Mark as Shipped"
+            >
+              🚚 Ship
+            </button>
+            <!-- Complete button: show if shipped -->
+            <button
+              class="os-btn complete"
+              *ngIf="element.order_status === 'shipped'"
+              (click)="updateOrderStatus(element, 'completed')"
+              [disabled]="updatingStatusId === element.id"
+              title="Mark as Completed"
+            >
+              ✅ Done
+            </button>
+          </div>
+          <ng-template #naCell>
+            <span class="na-text">—</span>
+          </ng-template>
+        </td>
+      </ng-container>
+
       <!-- Payment Mode -->
       <ng-container matColumnDef="payment_mode">
         <th mat-header-cell *matHeaderCellDef>Payment</th>
         <td mat-cell *matCellDef="let element">
           <div class="pay-mode-cell">
-            <svg *ngIf="element.payment_mode === 'cash'" viewBox="0 0 24 24">
-              <path
-                d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
-              />
-            </svg>
-            <svg
-              *ngIf="element.payment_mode === 'razorpay'"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
-              />
-            </svg>
             <span>{{ element.payment_mode | titlecase }}</span>
           </div>
         </td>
@@ -128,7 +174,6 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
           <div class="action-cell">
-            <!-- Convert to GST — only for proforma invoices that aren't cancelled -->
             <button
               class="btn-convert"
               *ngIf="
@@ -145,14 +190,12 @@
               </svg>
               Convert to GST
             </button>
-
-            <!-- Download — uses HttpClient blob so JWT token is sent -->
             <button
               class="download-btn"
               (click)="downloadInvoice(element.id)"
               [class.downloading]="downloadingId === element.id"
               [disabled]="downloadingId === element.id"
-              title="Download Invoice PDF"
+              title="Download PDF"
             >
               <svg
                 *ngIf="downloadingId === element.id"
@@ -175,7 +218,6 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </div>
-
   <div class="table-footer">
     <mat-paginator
       [pageSize]="10"
@@ -185,7 +227,7 @@
   </div>
 </div>
 
-<!-- ═══ CONVERT TO GST CONFIRM MODAL ═══ -->
+<!-- Convert to GST Modal (unchanged) -->
 <div class="overlay" *ngIf="showConvertModal">
   <div class="convert-modal">
     <button class="m-close" (click)="showConvertModal = false">
@@ -195,7 +237,6 @@
         />
       </svg>
     </button>
-
     <div class="cm-icon">
       <svg viewBox="0 0 24 24">
         <path
@@ -203,35 +244,32 @@
         />
       </svg>
     </div>
-
     <h3 class="cm-title">Convert to GST Invoice?</h3>
     <p class="cm-sub">
       GST (5%) will be added to
       <strong>{{ selectedInvoice?.invoice_number }}</strong
       >. A new invoice number will be assigned.
     </p>
-
     <div class="cm-preview" *ngIf="selectedInvoice">
       <div class="cm-row">
-        <span>Subtotal</span>
-        <strong>₹{{ selectedInvoice.sub_total | number: "1.2-2" }}</strong>
+        <span>Subtotal</span
+        ><strong>₹{{ selectedInvoice.sub_total | number: "1.2-2" }}</strong>
       </div>
       <div class="cm-row">
-        <span>GST 5% (to be added)</span>
-        <strong class="cm-gst"
+        <span>GST 5%</span
+        ><strong class="cm-gst"
           >+₹{{
             getGstPreview(selectedInvoice.sub_total) | number: "1.2-2"
           }}</strong
         >
       </div>
-      <div class="cm-row cm-total-row">
-        <span>New Total</span>
-        <strong class="cm-total"
+      <div class="cm-row">
+        <span>New Total</span
+        ><strong class="cm-total"
           >₹{{ getNewTotal(selectedInvoice) | number: "1.2-2" }}</strong
         >
       </div>
     </div>
-
     <div class="cm-actions">
       <button class="cm-btn-cancel" (click)="showConvertModal = false">
         Cancel

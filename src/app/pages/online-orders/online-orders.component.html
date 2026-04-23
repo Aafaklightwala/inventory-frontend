@@ -1,0 +1,339 @@
+<!-- online-orders.component.html -->
+<div class="page-header">
+  <div class="header-left">
+    <h2 class="title">
+      <span class="title-icon">🌐</span>
+      Online Orders
+    </h2>
+    <span class="subtitle">Orders received from Gamtu website</span>
+  </div>
+  <div class="header-right">
+    <div class="search-box">
+      <svg
+        class="search-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Search orders..."
+        (keyup)="applyFilter($event)"
+      />
+    </div>
+    <button class="refresh-btn" (click)="loadOrders()">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+        />
+      </svg>
+      Refresh
+    </button>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat-chip new">
+    <span class="dot"></span>
+    {{ (dataSource.data | statusFilter: "new").length }} New
+  </div>
+  <div class="stat-chip processing">
+    <span class="dot"></span>
+    {{ (dataSource.data | statusFilter: "processing").length }} Processing
+  </div>
+  <div class="stat-chip shipped">
+    <span class="dot"></span>
+    {{ (dataSource.data | statusFilter: "shipped").length }} Shipped
+  </div>
+  <div class="stat-chip completed">
+    <span class="dot"></span>
+    {{ (dataSource.data | statusFilter: "completed").length }} Completed
+  </div>
+</div>
+
+<!-- Table card -->
+<div class="table-card">
+  <div class="table-scroll">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- # ID -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="order-id">#{{ row.id }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Customer Name -->
+      <ng-container matColumnDef="customer_name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="cust-cell">
+            <div class="cust-avatar">
+              {{ (row.customer_name || "W").charAt(0).toUpperCase() }}
+            </div>
+            <div class="cust-info">
+              <span class="cust-name">{{
+                row.customer_name || "Website Customer"
+              }}</span>
+              <span class="cust-items">{{ getItemsCount(row) }} item(s)</span>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Phone -->
+      <ng-container matColumnDef="customer_phone">
+        <th mat-header-cell *matHeaderCellDef>Phone</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="phone">{{ row.customer_phone || "—" }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Total -->
+      <ng-container matColumnDef="total">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="total-val">₹{{ row.total | number: "1.2-2" }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Payment Mode -->
+      <ng-container matColumnDef="payment_mode">
+        <th mat-header-cell *matHeaderCellDef>Payment</th>
+        <td mat-cell *matCellDef="let row">
+          <span
+            class="pay-badge"
+            [class.cod]="row.payment_mode === 'cod'"
+            [class.upi]="row.payment_mode === 'upi'"
+          >
+            {{ row.payment_mode?.toUpperCase() || "COD" }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Status -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+            {{ getStatusIcon(row.status) }} {{ row.status | titlecase }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Date -->
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="date-text">{{
+            row.created_at | date: "dd MMM yyyy, hh:mm a"
+          }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Actions -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="action-group">
+            <!-- View Order -->
+            <button
+              class="btn-view"
+              (click)="viewOrder(row)"
+              title="View order details"
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                />
+              </svg>
+              View
+            </button>
+
+            <!-- Make Bill (if no invoice yet) -->
+            <button
+              class="btn-bill"
+              *ngIf="!row.invoice_id"
+              (click)="makeBill(row)"
+              [disabled]="makingBillId === row.id"
+              title="Create invoice from this order"
+            >
+              <svg *ngIf="makingBillId !== row.id" viewBox="0 0 24 24">
+                <path
+                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+                />
+              </svg>
+              <svg
+                *ngIf="makingBillId === row.id"
+                class="spin"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
+                />
+              </svg>
+              {{ makingBillId === row.id ? "Creating..." : "Make Bill" }}
+            </button>
+
+            <!-- Bill created indicator -->
+            <span
+              class="bill-done"
+              *ngIf="row.invoice_id"
+              title="Bill already created"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+              Billed
+            </span>
+
+            <!-- Status updaters (only for non-completed orders) -->
+            <div
+              class="status-actions"
+              *ngIf="row.status !== 'completed' && row.status !== 'cancelled'"
+            >
+              <button
+                class="btn-status shipped"
+                *ngIf="row.status !== 'shipped'"
+                (click)="updateStatus(row, 'shipped')"
+                [disabled]="updatingStatusId === row.id"
+                title="Mark as shipped"
+              >
+                🚚 Ship
+              </button>
+
+              <button
+                class="btn-status completed"
+                *ngIf="row.status === 'shipped'"
+                (click)="updateStatus(row, 'completed')"
+                [disabled]="updatingStatusId === row.id"
+                title="Mark as completed"
+              >
+                ✅ Complete
+              </button>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        [class.row-new]="row.status === 'new'"
+      ></tr>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <mat-paginator
+      [pageSize]="10"
+      [pageSizeOptions]="[10, 20, 50]"
+      showFirstLastButtons
+    ></mat-paginator>
+  </div>
+</div>
+
+<!-- ═══ ORDER DETAIL MODAL ═══ -->
+<div
+  class="overlay"
+  *ngIf="showDetailModal && selectedOrder"
+  (click)="showDetailModal = false"
+>
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="showDetailModal = false">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+        />
+      </svg>
+    </button>
+
+    <div class="modal-header">
+      <div class="modal-icon">🌐</div>
+      <div>
+        <h3 class="modal-title">Order #{{ selectedOrder.id }}</h3>
+        <span class="modal-source">Website Order</span>
+      </div>
+      <span
+        class="status-badge large"
+        [ngClass]="getStatusClass(selectedOrder.status)"
+      >
+        {{ getStatusIcon(selectedOrder.status) }}
+        {{ selectedOrder.status | titlecase }}
+      </span>
+    </div>
+
+    <div class="modal-body">
+      <div class="detail-row">
+        <span class="detail-label">👤 Customer</span>
+        <span class="detail-value">{{
+          selectedOrder.customer_name || "Website Customer"
+        }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedOrder.customer_phone">
+        <span class="detail-label">📱 Phone</span>
+        <span class="detail-value">{{ selectedOrder.customer_phone }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedOrder.customer_email">
+        <span class="detail-label">📧 Email</span>
+        <span class="detail-value">{{ selectedOrder.customer_email }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedOrder.address">
+        <span class="detail-label">📍 Address</span>
+        <span class="detail-value">{{ selectedOrder.address }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">💳 Payment</span>
+        <span class="detail-value">{{
+          selectedOrder.payment_mode?.toUpperCase() || "COD"
+        }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">📅 Ordered</span>
+        <span class="detail-value">{{
+          selectedOrder.created_at | date: "dd MMM yyyy, hh:mm a"
+        }}</span>
+      </div>
+    </div>
+
+    <!-- Items list -->
+    <div class="modal-items" *ngIf="selectedOrder.items?.length">
+      <h4 class="items-title">Order Items</h4>
+      <div class="item-row" *ngFor="let item of selectedOrder.items">
+        <ng-container *ngIf="item">
+          <span class="item-name">{{ item.product_name }}</span>
+          <span class="item-qty">× {{ item.quantity }}</span>
+          <span class="item-price">₹{{ item.price | number: "1.2-2" }}</span>
+          <span class="item-total"
+            >₹{{ item.price * item.quantity | number: "1.2-2" }}</span
+          >
+        </ng-container>
+      </div>
+      <div class="item-total-row">
+        <span>Order Total</span>
+        <span class="grand-total"
+          >₹{{ selectedOrder.total | number: "1.2-2" }}</span
+        >
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-close" (click)="showDetailModal = false">
+        Close
+      </button>
+      <button
+        class="modal-btn-bill"
+        *ngIf="!selectedOrder.invoice_id"
+        (click)="makeBill(selectedOrder); showDetailModal = false"
+      >
+        📄 Make Bill
+      </button>
+    </div>
+  </div>
+</div>

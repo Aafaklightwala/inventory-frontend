@@ -1,11 +1,13 @@
+// invoices.component.ts — updated with website source column + ship/complete actions
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-
+import { HttpClient } from '@angular/common/http';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-invoices',
@@ -25,29 +27,35 @@ export class InvoicesComponent implements OnInit {
   startDate: string = '';
   endDate: string = '';
 
+  // Added 'source' and 'order_status' columns
   displayedColumns: string[] = [
     'id',
     'invoice_number',
     'customer_name',
+    'source',
     'total',
     'status',
+    'order_status',
     'payment_mode',
     'created_at',
     'action',
   ];
 
-  /* ── Convert to GST modal ───────────────────── */
   showConvertModal = false;
   selectedInvoice: any = null;
   converting = false;
-
-  /* ── Download state ─────────────────────────── */
   downloadingId: number | null = null;
+
+  // Track which invoice is being status-updated
+  updatingStatusId: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private http: HttpClient,
+  ) {}
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -62,23 +70,47 @@ export class InvoicesComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = value.trim().toLowerCase();
+    this.dataSource.filter = (event.target as HTMLInputElement).value
+      .trim()
+      .toLowerCase();
   }
 
-  /* ────────────────────────────────────────────────────────
-     DOWNLOAD INVOICE PDF
-     Uses HttpClient (blob) so the auth interceptor attaches
-     the JWT token automatically. window.open() bypasses the
-     interceptor and gets a 401 from the auth middleware.
-  ──────────────────────────────────────────────────────── */
-  downloadInvoice(id: number) {
-    if (this.downloadingId === id) return; // prevent double-click
-    this.downloadingId = id;
+  // ── Update order status (shipped / completed) ──────────────
+  updateOrderStatus(invoice: any, status: string) {
+    if (this.updatingStatusId === invoice.id) return;
+    this.updatingStatusId = invoice.id;
 
+    this.http
+      .put<any>(`${environment.apiUrl}/invoices/${invoice.id}/order-status`, {
+        status,
+      })
+      .subscribe({
+        next: () => {
+          this.updatingStatusId = null;
+          invoice.order_status = status;
+        },
+        error: (err: any) => {
+          this.updatingStatusId = null;
+          alert('❌ Failed to update status');
+        },
+      });
+  }
+
+  getOrderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'os-pending',
+      shipped: 'os-shipped',
+      completed: 'os-completed',
+    };
+    return map[status] || 'os-pending';
+  }
+
+  // ── Download PDF ───────────────────────────────────────────
+  downloadInvoice(id: number) {
+    if (this.downloadingId === id) return;
+    this.downloadingId = id;
     this.api.downloadInvoicePdf(id).subscribe({
       next: (blob: Blob) => {
-        // Create a temporary <a> and trigger the browser download
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -89,15 +121,13 @@ export class InvoicesComponent implements OnInit {
         window.URL.revokeObjectURL(url);
         this.downloadingId = null;
       },
-      error: (err: any) => {
-        console.error('Download failed', err);
-        alert('❌ Failed to download invoice. Please try again.');
+      error: () => {
+        alert('❌ Failed to download invoice.');
         this.downloadingId = null;
       },
     });
   }
 
-  /* ── Export range (no auth needed for CSV, adjust if needed) */
   exportByDate() {
     if (!this.startDate || !this.endDate) return;
     this.api.exportInvoicesByDate(this.startDate, this.endDate).subscribe({
@@ -115,35 +145,27 @@ export class InvoicesComponent implements OnInit {
     });
   }
 
-  /* ── Open convert modal ─────────────────────── */
   convertToGst(invoice: any) {
     this.selectedInvoice = invoice;
     this.showConvertModal = true;
   }
-
-  /* ── GST preview helpers ────────────────────── */
   getGstPreview(subTotal: number): number {
     return (Number(subTotal) * 5) / 100;
   }
-
   getNewTotal(invoice: any): number {
     const sub = Number(invoice.sub_total);
-    const gst = (sub * 5) / 100;
-    const discount = Number(invoice.discount) || 0;
-    return sub + gst - discount;
+    return sub + (sub * 5) / 100 - (Number(invoice.discount) || 0);
   }
 
-  /* ── Confirm convert API call ───────────────── */
   confirmConvert() {
     if (!this.selectedInvoice) return;
     this.converting = true;
-
     this.api.convertInvoiceToGst(this.selectedInvoice.id).subscribe({
       next: (res: any) => {
         this.converting = false;
         this.showConvertModal = false;
         alert(
-          `✅ Converted!\nNew Invoice: ${res.new_invoice_number}\nNew Total (with GST): ₹${res.final_total}`,
+          `✅ Converted!\nNew Invoice: ${res.new_invoice_number}\nTotal: ₹${res.final_total}`,
         );
         this.loadInvoices();
       },

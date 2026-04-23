@@ -1,5 +1,28 @@
 <h2 class="title">Dashboard</h2>
 
+<!-- ═══ NEW ONLINE ORDER POPUP (shows on login) ═══ -->
+<div class="order-popup-overlay" *ngIf="showNewOrderPopup">
+  <div class="order-popup">
+    <span class="popup-emoji">🛒</span>
+    <h3 class="popup-title">New Website Orders!</h3>
+    <p class="popup-sub">
+      You have <strong>{{ popupOrderCount }}</strong> new
+      {{ popupOrderCount === 1 ? "order" : "orders" }} from Gamtu website
+      waiting to be processed.
+    </p>
+    <div class="popup-actions">
+      <button class="popup-dismiss" (click)="dismissPopup()">Later</button>
+      <a
+        class="popup-view"
+        routerLink="/online-orders"
+        (click)="dismissPopup()"
+      >
+        📦 View Orders
+      </a>
+    </div>
+  </div>
+</div>
+
 <div class="filter-bar">
   <div class="segment">
     <button
@@ -8,14 +31,12 @@
     >
       7 Days
     </button>
-
     <button
       [class.active]="selectedFilter === 'month'"
       (click)="changeFilter('month')"
     >
       This Month
     </button>
-
     <button
       [class.active]="selectedFilter === 'custom'"
       (click)="selectedFilter = 'custom'"
@@ -25,7 +46,6 @@
   </div>
 
   <div *ngIf="selectedFilter === 'custom'" class="custom-date-modern">
-    <!-- Start Date — opens below, aligned left -->
     <div class="date-wrapper">
       <button class="date-capsule" (click)="picker1.open()">
         {{ startDate ? (startDate | date: "dd MMM yyyy") : "Start Date" }}
@@ -43,8 +63,6 @@
         xPosition="start"
       ></mat-datepicker>
     </div>
-
-    <!-- End Date — opens below, aligned RIGHT (end) so it doesn't overflow -->
     <div class="date-wrapper">
       <button class="date-capsule" (click)="picker2.open()">
         {{ endDate ? (endDate | date: "dd MMM yyyy") : "End Date" }}
@@ -62,18 +80,18 @@
         xPosition="end"
       ></mat-datepicker>
     </div>
-
     <button class="apply-btn-modern" (click)="loadCustom()">
       Apply Filter
     </button>
   </div>
 </div>
 
+<!-- ── Cards ─────────────────────────────────────── -->
 <div class="cards">
   <div class="card highlight">
     <h4>Total Revenue</h4>
     <p>₹{{ stats.totalRevenue }}</p>
-    <span class="sub"> {{ stats.totalCustomers }} Customers </span>
+    <span class="sub">{{ stats.totalCustomers }} Customers</span>
   </div>
 
   <div class="card highlight">
@@ -90,8 +108,25 @@
     <h4>Inventory Value</h4>
     <p>₹{{ stats.inventoryValue | number: "1.0-2" }}</p>
   </div>
+
+  <!-- ── Online Orders Card ────────────────────────── -->
+  <!-- <div
+    class="card highlight online-orders-card"
+    [class.has-new]="newOnlineOrderCount > 0"
+  >
+    <div class="card-top-row">
+      <h4>🌐 Online Orders</h4>
+      <span class="new-badge" *ngIf="newOnlineOrderCount > 0"
+        >{{ newOnlineOrderCount }} NEW</span
+      >
+    </div>
+    <p>{{ onlineOrderCount }}</p>
+    <span class="sub">From Gamtu Website</span>
+    <a class="view-orders-btn" routerLink="/online-orders">View Orders →</a>
+  </div> -->
 </div>
 
+<!-- ── Charts ─────────────────────────────────────── -->
 <div class="chart-card">
   <h3>Daily Sales</h3>
   <div id="salesChart"></div>
@@ -105,14 +140,360 @@
     </h3>
     <div id="stockChart"></div>
   </div>
-
   <div class="chart-card">
     <h3>Top Selling Products</h3>
     <div id="topProductsChart"></div>
   </div>
-
   <div class="chart-card">
     <h3>Payment Mode</h3>
     <div id="paymentChart"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ONLINE ORDERS SECTION
+══════════════════════════════════════════════════════ -->
+<div class="online-section">
+  <!-- Recent Order Summary -->
+  <div class="recent-summary-card" *ngIf="onlineOrders.length > 0">
+    <h3 class="section-title">Recent Order Summary</h3>
+    <div class="summary-grid">
+      <!-- Last Order -->
+      <div class="summary-item">
+        <div class="summary-icon orange">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">Last Order</span>
+          <span class="summary-value"
+            >#{{ onlineOrders[0]?.customer_name }}</span
+          >
+          <span class="summary-sub">{{
+            onlineOrders[0]?.created_at | date: "dd MMM yyyy, hh:mm a"
+          }}</span>
+          <span
+            class="oo-status-badge"
+            [ngClass]="getOnlineStatusClass(onlineOrders[0]?.status)"
+          >
+            {{ getOnlineStatusLabel(onlineOrders[0]?.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Top Customer -->
+      <div class="summary-item">
+        <div class="summary-icon orange">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+            />
+          </svg>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">Top Customer</span>
+          <span class="summary-value">{{ topOnlineCustomer?.name }}</span>
+          <span class="summary-sub">{{ topOnlineCustomer?.count }} Orders</span>
+          <span class="summary-sub strong"
+            >₹{{ topOnlineCustomer?.total | number: "1.2-2" }} Total Spent</span
+          >
+        </div>
+      </div>
+
+      <!-- Avg Processing Time -->
+      <div class="summary-item">
+        <div class="summary-icon orange">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"
+            />
+          </svg>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">Total Online Revenue</span>
+          <span class="summary-value"
+            >₹{{ totalOnlineRevenue | number: "1.2-2" }}</span
+          >
+          <span class="summary-sub"
+            >{{ onlineOrders.length }} Website Orders</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="oo-bottom-grid">
+    <!-- Order Details Table -->
+    <div class="oo-table-card">
+      <div class="oo-table-header">
+        <h3 class="section-title">Order Details</h3>
+        <div class="oo-header-actions">
+          <div class="oo-search-box">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search Order ID, Customer, Status..."
+              [(ngModel)]="orderSearchQuery"
+              (ngModelChange)="filterOrders()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="oo-table-wrap">
+        <table class="oo-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Payment Mode</th>
+              <th>Status</th>
+              <th>Items</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let order of pagedOnlineOrders"
+              [class.row-new]="order.status === 'new'"
+            >
+              <td>
+                <span class="oo-order-id"
+                  >ORD-{{ order.website_order_id || order.id }}</span
+                >
+              </td>
+              <td>
+                <div class="oo-cust-cell">
+                  <div class="oo-avatar">
+                    {{ (order.customer_name || "W").charAt(0).toUpperCase() }}
+                  </div>
+                  <span class="oo-cust-name">{{
+                    order.customer_name || "Website Customer"
+                  }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="oo-date">{{
+                  order.created_at | date: "dd MMM yyyy, hh:mm a"
+                }}</span>
+              </td>
+              <td>
+                <span class="oo-amount"
+                  >₹{{ order.total | number: "1.2-2" }}</span
+                >
+              </td>
+              <td>
+                <span
+                  class="oo-pay-badge"
+                  [class.cod]="order.payment_mode === 'cod'"
+                  [class.upi]="order.payment_mode === 'upi'"
+                >
+                  {{ order.payment_mode?.toUpperCase() || "COD" }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="oo-status-badge"
+                  [ngClass]="getOnlineStatusClass(order.status)"
+                >
+                  {{ getOnlineStatusLabel(order.status) }}
+                </span>
+              </td>
+              <td>
+                <span class="oo-items-count">{{
+                  getOnlineItemsCount(order)
+                }}</span>
+              </td>
+              <td>
+                <button
+                  class="oo-view-btn"
+                  (click)="viewOnlineOrder(order)"
+                  title="View"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredOnlineOrders.length === 0">
+              <td colspan="8" class="oo-empty">No orders found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="oo-pagination">
+        <span class="oo-page-info"
+          >Showing {{ ooPageStart }} to {{ ooPageEnd }} of
+          {{ filteredOnlineOrders.length }} orders</span
+        >
+        <div class="oo-page-btns">
+          <button
+            class="oo-page-btn"
+            (click)="ooFirstPage()"
+            [disabled]="ooPage === 1"
+          >
+            «
+          </button>
+          <button
+            class="oo-page-btn"
+            (click)="ooPrevPage()"
+            [disabled]="ooPage === 1"
+          >
+            ‹
+          </button>
+          <button
+            *ngFor="let p of ooPageNumbers"
+            class="oo-page-btn"
+            [class.active]="p === ooPage"
+            (click)="ooGoTo(p)"
+          >
+            {{ p }}
+          </button>
+          <button
+            class="oo-page-btn"
+            (click)="ooNextPage()"
+            [disabled]="ooPage === ooTotalPages"
+          >
+            ›
+          </button>
+          <button
+            class="oo-page-btn"
+            (click)="ooLastPage()"
+            [disabled]="ooPage === ooTotalPages"
+          >
+            »
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders by Status Donut -->
+    <div class="oo-status-card">
+      <h3 class="section-title">Orders by Status</h3>
+      <div id="onlineStatusChart"></div>
+      <div class="oo-status-legend">
+        <div class="oo-legend-item" *ngFor="let s of onlineStatusSummary">
+          <span class="oo-legend-dot" [style.background]="s.color"></span>
+          <span class="oo-legend-label">{{ s.label }}</span>
+          <span class="oo-legend-count">{{ s.count }} ({{ s.pct }}%)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ONLINE ORDER DETAIL MODAL ═══ -->
+<div
+  class="overlay"
+  *ngIf="showOOModal && selectedOOOrder"
+  (click)="showOOModal = false"
+>
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="showOOModal = false">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+        />
+      </svg>
+    </button>
+
+    <div class="modal-header">
+      <div class="modal-icon">🌐</div>
+      <div>
+        <h3 class="modal-title">
+          Order #{{ selectedOOOrder.website_order_id || selectedOOOrder.id }}
+        </h3>
+        <span class="modal-source">Website Order</span>
+      </div>
+      <span
+        class="oo-status-badge large"
+        [ngClass]="getOnlineStatusClass(selectedOOOrder.status)"
+      >
+        {{ getOnlineStatusLabel(selectedOOOrder.status) }}
+      </span>
+    </div>
+
+    <div class="modal-body">
+      <div class="detail-row">
+        <span class="detail-label">👤 Customer</span>
+        <span class="detail-value">{{
+          selectedOOOrder.customer_name || "Website Customer"
+        }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedOOOrder.customer_phone">
+        <span class="detail-label">📱 Phone</span>
+        <span class="detail-value">{{ selectedOOOrder.customer_phone }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedOOOrder.customer_email">
+        <span class="detail-label">📧 Email</span>
+        <span class="detail-value">{{ selectedOOOrder.customer_email }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedOOOrder.address">
+        <span class="detail-label">📍 Address</span>
+        <span class="detail-value">{{ selectedOOOrder.address }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">💳 Payment</span>
+        <span class="detail-value">{{
+          selectedOOOrder.payment_mode?.toUpperCase() || "COD"
+        }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">📅 Ordered</span>
+        <span class="detail-value">{{
+          selectedOOOrder.created_at | date: "dd MMM yyyy, hh:mm a"
+        }}</span>
+      </div>
+    </div>
+
+    <div class="modal-items" *ngIf="selectedOOOrder.items?.length">
+      <h4 class="items-title">Order Items</h4>
+      <div class="item-row" *ngFor="let item of selectedOOOrder.items">
+        <ng-container *ngIf="item">
+          <span class="item-name">{{ item.product_name }}</span>
+          <span class="item-qty">× {{ item.quantity }}</span>
+          <span class="item-price">₹{{ item.price | number: "1.2-2" }}</span>
+          <span class="item-total"
+            >₹{{ item.price * item.quantity | number: "1.2-2" }}</span
+          >
+        </ng-container>
+      </div>
+      <div class="item-total-row">
+        <span>Order Total</span>
+        <span class="grand-total"
+          >₹{{ selectedOOOrder.total | number: "1.2-2" }}</span
+        >
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-close" (click)="showOOModal = false">
+        Close
+      </button>
+      <a
+        class="modal-btn-bill"
+        routerLink="/online-orders"
+        (click)="showOOModal = false"
+        >📦 Manage Order</a
+      >
+    </div>
   </div>
 </div>

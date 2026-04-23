@@ -7,6 +7,7 @@ import { LoginComponent } from './pages/auth/login.component';
 import { SignupComponent } from './pages/auth/signup.component';
 import { authGuard } from './auth.guard';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { OnlineOrdersComponent } from './pages/online-orders/online-orders.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,6 +22,11 @@ export const routes: Routes = [
   { path: 'invoices', component: InvoicesComponent, canActivate: [authGuard] },
   { path: 'billing', component: BillingComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  {
+    path: 'online-orders',
+    component: OnlineOrdersComponent,
+    canActivate: [authGuard],
+  },
 
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];
